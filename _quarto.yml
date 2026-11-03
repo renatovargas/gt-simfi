@@ -1,0 +1,24 @@
+project:
+  type: website
+  execute-dir: project
+  output-dir: docs
+
+website:
+  title: "GT SIMFI"
+  site-url: https://renatovargas.github.io/gt-simfi/
+  repo-url: https://github.com/renatovargas/gt-simfi
+  navbar:
+    left:
+      - href: index.qmd
+        text: Home
+
+format:
+  html:
+    theme:
+      - cosmo
+      - brand
+    css: styles.css
+    toc: true
+
+
+
