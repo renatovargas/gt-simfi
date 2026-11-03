@@ -1,0 +1,60 @@
+# Utilidades de interfaz compartidas por los módulos.
+
+#' Tabla DT de resultados. Se usa con `renderDT(..., server = FALSE)` para que se
+#' reinicialice por completo cuando cambia el número de columnas.
+dt_tabla <- function(df, digitos = 2, altura = NULL) {
+  num <- names(df)[vapply(df, is.numeric, logical(1))]
+  t <- DT::datatable(df, rownames = FALSE, class = "compact stripe hover",
+                     options = list(dom = "t", paging = FALSE, scrollX = TRUE,
+                                    scrollY = altura, ordering = FALSE,
+                                    language = list(emptyTable = "Sin datos")))
+  if (length(num)) t <- DT::formatRound(t, num, digitos)
+  t
+}
+
+#' Insignia de estado de un componente: "sin guardar", "guardado", "cambios sin guardar".
+insignia_estado <- function(estado) {
+  clase <- switch(estado, "guardado" = "text-bg-success", "cambios sin guardar" = "text-bg-warning",
+                  "text-bg-secondary")
+  tags$span(class = paste("badge", clase), estado)
+}
+
+#' Mensaje de "aún no hay resultados".
+aviso_vacio <- function(texto) {
+  div(class = "text-muted text-center py-5", icon("chart-line", class = "fa-2x mb-2"), tags$br(), texto)
+}
+
+#' Aviso cuando la situación base no salió del archivo precalculado vigente.
+aviso_base <- function(res) {
+  if (!isFALSE(res$base_estado$vigente)) return(NULL)
+  div(class = "alert alert-warning py-2 small",
+      "La situación base se calculó en esta corrida porque la base precalculada falta o está ",
+      "desactualizada. Los resultados son válidos; conviene reconstruir la base para ahorrar tiempo.")
+}
+
+#' Barra de biblioteca de un componente: elegir uno guardado carga sus valores para
+#' modificarlos; el nombre nunca se rellena solo (se escribe al guardar).
+barra_biblioteca_ui <- function(ns, texto_base, ejemplo, etiqueta_nombre) {
+  tagList(
+    layout_columns(
+      col_widths = c(9, 3),
+      selectizeInput(ns("cargar"), "Partir de", choices = setNames(REF_SENTINELA, texto_base),
+                     options = list(dropdownParent = "body")),
+      div(class = "pt-4 text-end", actionButton(ns("eliminar"), icon("trash"),
+            class = "btn-outline-danger", title = "Eliminar el componente seleccionado"))),
+    layout_columns(
+      col_widths = c(6, 6),
+      textInput(ns("nombre"), etiqueta_nombre, placeholder = ejemplo),
+      div(class = "pt-4", actionButton(ns("guardar"), tagList(icon("floppy-disk"), " Guardar"),
+                                       class = "btn-primary"))))
+}
+
+#' Pide confirmación antes de reemplazar un componente guardado con el mismo nombre.
+confirmar_reemplazo <- function(ns, nombre, tipo) {
+  showModal(modalDialog(
+    title = "Reemplazar componente",
+    sprintf("Ya existe %s «%s». ¿Desea reemplazarlo con los valores actuales?", tipo, nombre),
+    footer = tagList(modalButton("Cancelar"),
+                     actionButton(ns("confirmar_reemplazo"), "Reemplazar", class = "btn-primary")),
+    easyClose = TRUE))
+}

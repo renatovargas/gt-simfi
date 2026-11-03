@@ -1,7 +1,11 @@
 project:
   type: website
+  render:
+    - "*.qmd"
   execute-dir: project
   output-dir: docs
+
+lang: es
 
 website:
   title: "GT SIMFI"
@@ -10,7 +14,17 @@ website:
   navbar:
     left:
       - href: index.qmd
-        text: Home
+        text: Inicio
+      - href: instructivo.qmd
+        text: Instructivo
+    right:
+      - icon: github
+        href: https://github.com/renatovargas/gt-simfi
+        aria-label: Repositorio en GitHub
+
+execute:
+  eval: false
+  freeze: auto
 
 format:
   html:
@@ -19,6 +33,3 @@ format:
       - brand
     css: styles.css
     toc: true
-
-
-

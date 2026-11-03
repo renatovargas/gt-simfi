@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="es" xml:lang="es"><head>
 
 <meta charset="utf-8">
 <meta name="generator" content="quarto-1.10.18">
@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>GT SIMFI</title>
+<title>Microsimulación del subsidio eléctrico en Guatemala – GT SIMFI</title>
 <style>
 /* Default styles provided by pandoc.
 ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
@@ -25,6 +25,41 @@ ul.task-list li input[type="checkbox"] {
   width: 0.8em;
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
 }
 </style>
 
@@ -60,17 +95,17 @@ ul.task-list li input[type="checkbox"] {
   ],
   "show-item-context": false,
   "language": {
-    "search-no-results-text": "No results",
-    "search-matching-documents-text": "matching documents",
-    "search-copy-link-title": "Copy link to search",
-    "search-hide-matches-text": "Hide additional matches",
-    "search-more-match-text": "more match in this document",
-    "search-more-matches-text": "more matches in this document",
-    "search-clear-button-title": "Clear",
+    "search-no-results-text": "No se han encontrado resultados",
+    "search-matching-documents-text": "documentos encontrados",
+    "search-copy-link-title": "Copiar el enlace en la búsqueda",
+    "search-hide-matches-text": "Ocultar resultados adicionales",
+    "search-more-match-text": "resultado adicional en este documento",
+    "search-more-matches-text": "resultados adicionales en este documento",
+    "search-clear-button-title": "Borrar",
     "search-text-placeholder": "",
-    "search-detached-cancel-button-title": "Cancel",
-    "search-submit-button-title": "Submit",
-    "search-label": "Search"
+    "search-detached-cancel-button-title": "Cancelar",
+    "search-submit-button-title": "Enviar",
+    "search-label": "Buscar"
   }
 }</script>
 
@@ -89,15 +124,26 @@ ul.task-list li input[type="checkbox"] {
     <span class="navbar-title">GT SIMFI</span>
     </a>
   </div>
-            <div id="quarto-search" class="" title="Search"></div>
-          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+            <div id="quarto-search" class="" title="Buscar"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Navegación de palanca" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
   <span class="navbar-toggler-icon"></span>
 </button>
           <div class="collapse navbar-collapse" id="navbarCollapse">
             <ul class="navbar-nav navbar-nav-scroll me-auto">
   <li class="nav-item">
     <a class="nav-link active" href="./index.html" aria-current="page"> 
-<span class="menu-text">Home</span></a>
+<span class="menu-text">Inicio</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="./instructivo.html"> 
+<span class="menu-text">Instructivo</span></a>
+  </li>  
+</ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/renatovargas/gt-simfi"> <i class="bi bi-github" role="img" aria-label="Repositorio en GitHub">
+</i> 
+<span class="menu-text"></span></a>
   </li>  
 </ul>
           </div> <!-- /navcollapse -->
@@ -110,15 +156,26 @@ ul.task-list li input[type="checkbox"] {
 <div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
 <!-- sidebar -->
 <!-- margin-sidebar -->
-    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar zindex-bottom">
-        
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">En esta página</h2>
+   
+  <ul>
+  <li><a href="#requisitos-e-instalación" id="toc-requisitos-e-instalación" class="nav-link active" data-scroll-target="#requisitos-e-instalación">Requisitos e instalación</a></li>
+  <li><a href="#flujo-de-uso" id="toc-flujo-de-uso" class="nav-link" data-scroll-target="#flujo-de-uso">Flujo de uso</a></li>
+  <li><a href="#cómo-leer-los-resultados" id="toc-cómo-leer-los-resultados" class="nav-link" data-scroll-target="#cómo-leer-los-resultados">Cómo leer los resultados</a></li>
+  <li><a href="#guardar-y-compartir" id="toc-guardar-y-compartir" class="nav-link" data-scroll-target="#guardar-y-compartir">Guardar y compartir</a></li>
+  <li><a href="#datos-y-metodología" id="toc-datos-y-metodología" class="nav-link" data-scroll-target="#datos-y-metodología">Datos y metodología</a></li>
+  </ul>
+</nav>
     </div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">GT SIMFI</h1>
+<h1 class="title">Microsimulación del subsidio eléctrico en Guatemala</h1>
+<p class="subtitle lead">GT SIMFI</p>
 </div>
 
 
@@ -135,10 +192,171 @@ ul.task-list li input[type="checkbox"] {
 </header>
 
 
-<p>This is a Quarto website.</p>
-<p>To learn more about Quarto websites visit <a href="https://quarto.org/docs/websites" class="uri">https://quarto.org/docs/websites</a>.</p>
+<p>Aplicación para simular cómo cambian la pobreza, la desigualdad y el costo fiscal cuando se modifican los esquemas tarifarios del subsidio a la electricidad y las transferencias compensatorias. Los cálculos usan los microdatos de la ENCOVI 2023.</p>
+<div class="descarga">
+<p><a href="https://github.com/renatovargas/gt-simfi/archive/refs/heads/main.zip" class="btn btn-primary btn-lg">Descargar la app</a></p>
+</div>
+<p>La app se corre en su propia computadora. Esta página es estática y no ejecuta la simulación.</p>
+<section id="requisitos-e-instalación" class="level2">
+<h2 class="anchored" data-anchor-id="requisitos-e-instalación">Requisitos e instalación</h2>
+<ol type="1">
+<li>Instale la versión actual de <a href="https://cran.r-project.org/">R</a> y un entorno de trabajo, como <a href="https://positron.posit.co/">Positron</a> o RStudio.</li>
+<li>Instale los paquetes una sola vez desde la consola de R:</li>
+</ol>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">install.packages</span>(<span class="fu">c</span>(</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>  <span class="st">"shiny"</span>, <span class="st">"bslib"</span>, <span class="st">"DT"</span>, <span class="st">"plotly"</span>, <span class="st">"htmltools"</span>, <span class="st">"jsonlite"</span>, <span class="st">"rlang"</span>,</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>  <span class="st">"readxl"</span>, <span class="st">"openxlsx"</span>, <span class="st">"janitor"</span>, <span class="st">"tidyverse"</span>, <span class="st">"data.table"</span>, <span class="st">"statar"</span>,</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>  <span class="st">"scales"</span>, <span class="st">"collapse"</span>, <span class="st">"ragg"</span>, <span class="st">"sf"</span>, <span class="st">"haven"</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>))</span></code></pre></div><button title="Copiar al portapapeles" class="code-copy-button"><i class="bi"></i></button></div>
+<ol start="3" type="1">
+<li>Descargue el archivo zip con el botón de arriba y descomprímalo.</li>
+<li>Abra la carpeta descomprimida completa en Positron (<em>Open Folder</em>) o RStudio (como proyecto o con <em>Session &gt; Set Working Directory</em>), no solo el archivo <code>app.R</code>. Las rutas de la app son relativas a esa carpeta.</li>
+<li>Lance la app desde la consola de R:</li>
+</ol>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>shiny<span class="sc">::</span><span class="fu">runApp</span>()</span></code></pre></div><button title="Copiar al portapapeles" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Si la app no arranca, detenga el servidor, verifique que la carpeta abierta es la raíz del proyecto y que los paquetes se instalaron sin errores, y vuelva a lanzarla.</p>
+</section>
+<section id="flujo-de-uso" class="level2">
+<h2 class="anchored" data-anchor-id="flujo-de-uso">Flujo de uso</h2>
+<p>La app tiene cuatro pestañas que se recorren en orden.</p>
+<p><strong>1. Esquemas tarifarios.</strong> Se define cómo se subsidia el consumo: los tramos de consumo (kWh por mes) y, para cada distribuidora, la tarifa plena, la tarifa objetivo y el cargo fijo de cada tramo, junto con la tarifa tope y la tarifa plena general. Se parte de la tarifa vigente o de un esquema guardado, se modifican los valores y se guarda con un nombre.</p>
+<p><strong>2. Compensaciones.</strong> Se define a quién se compensa y con qué monto mensual por hogar. Hay tres grupos de beneficiarios, además de la opción «Sin compensación»:</p>
+<ul>
+<li>hogares hasta cierto decil de ingreso, con monto fijo;</li>
+<li>beneficiarios del bono social, con monto fijo o como porcentaje de la mediana anual del bono;</li>
+<li>hogares con bajo consumo de electricidad (menos de cierto número de kWh por mes), con monto fijo.</li>
+</ul>
+<p><strong>3. Escenarios.</strong> Un escenario combina un esquema tarifario y una compensación de las guardadas. La opción «Tarifa vigente (situación actual)» o «Sin compensación» deja esa parte sin cambio; un escenario debe modificar al menos una de las dos. Se pueden crear los escenarios que se quiera y marcar hasta <strong>4</strong> para comparar. La situación base se incluye siempre.</p>
+<p><strong>4. Simular.</strong> El botón «Simular» corre los escenarios marcados. Los resultados se organizan en siete vistas:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 50%">
+<col style="width: 50%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Vista</th>
+<th>Contenido</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Resumen</td>
+<td>Indicadores principales de cada escenario</td>
+</tr>
+<tr class="even">
+<td>Pobreza</td>
+<td>Tasa de pobreza (general, extrema o con línea internacional) y brecha de pobreza</td>
+</tr>
+<tr class="odd">
+<td>Desigualdad</td>
+<td>Gini, Palma y medidas de concentración por instrumento</td>
+</tr>
+<tr class="even">
+<td>Costo fiscal</td>
+<td>Costo anual en millones de Q y como porcentaje del PIB</td>
+</tr>
+<tr class="odd">
+<td>Incidencia</td>
+<td>Efecto por deciles, estrato, área, sexo del jefe de hogar, categoría de hogar y regiones (con mapa regional)</td>
+</tr>
+<tr class="even">
+<td>Estratos</td>
+<td>Distribución de la población por estrato de ingreso</td>
+</tr>
+<tr class="odd">
+<td>Tarifas</td>
+<td>Tarifas resultantes de cada escenario</td>
+</tr>
+</tbody>
+</table>
+<p>Si cambia la configuración después de simular, la app avisa que los resultados ya no corresponden y hay que volver a simular.</p>
+</section>
+<section id="cómo-leer-los-resultados" class="level2">
+<h2 class="anchored" data-anchor-id="cómo-leer-los-resultados">Cómo leer los resultados</h2>
+<p><strong>Base y escenarios.</strong> «Base» es la situación actual, con la tarifa vigente y sin compensación. Los escenarios aparecen como «Escenario 1», «Escenario 2», etc. La tabla «Leyenda de los escenarios», al inicio de los resultados, indica el nombre completo, el esquema y la compensación de cada uno. Al pasar el cursor sobre los gráficos se ve el detalle y el valor exacto.</p>
+<p><strong>Tres columnas de ingreso.</strong> Pobreza, desigualdad y estratos se calculan sobre el ingreso per cápita del hogar en tres casos:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 50%">
+<col style="width: 50%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Columna</th>
+<th>Significado</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Base</td>
+<td>Ingreso con la tarifa vigente</td>
+</tr>
+<tr class="even">
+<td>Cambio en subsidio</td>
+<td>Efecto de la reforma tarifaria solamente</td>
+</tr>
+<tr class="odd">
+<td>Con compensación</td>
+<td>Efecto de la reforma más la transferencia compensatoria</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Unidades de la vista de incidencia.</strong></p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 50%">
+<col style="width: 50%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Unidad</th>
+<th>Interpretación</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Millones de Q por año</td>
+<td>Monto anual del instrumento para el grupo</td>
+</tr>
+<tr class="even">
+<td>% del ingreso disponible del grupo</td>
+<td>Peso del monto en el ingreso del grupo</td>
+</tr>
+<tr class="odd">
+<td>% del total (concentración)</td>
+<td>Parte del monto total que recibe el grupo</td>
+</tr>
+<tr class="even">
+<td>% del PIB</td>
+<td>Monto como porcentaje del producto interno bruto</td>
+</tr>
+<tr class="odd">
+<td>% de personas del grupo</td>
+<td>Cobertura: personas del grupo que se ven alcanzadas</td>
+</tr>
+</tbody>
+</table>
+<p>Los gráficos se pueden descargar como imagen PNG con la barra que aparece sobre cada uno.</p>
+</section>
+<section id="guardar-y-compartir" class="level2">
+<h2 class="anchored" data-anchor-id="guardar-y-compartir">Guardar y compartir</h2>
+<p>En la pestaña «Escenarios», la sección «Guardar y compartir» permite:</p>
+<ul>
+<li><strong>Exportar</strong> la biblioteca y los escenarios a un archivo Excel con tres hojas: esquemas, compensaciones y escenarios.</li>
+<li><strong>Importar</strong> un archivo Excel con ese formato, por ejemplo uno recibido de otra persona o editado a mano. Los escenarios que citan componentes inexistentes se omiten.</li>
+<li><strong>Nueva sesión</strong>, que borra esquemas, compensaciones, escenarios y resultados.</li>
+</ul>
+<p>El trabajo también se guarda automáticamente en el equipo y se restaura al abrir la app de nuevo.</p>
+</section>
+<section id="datos-y-metodología" class="level2">
+<h2 class="anchored" data-anchor-id="datos-y-metodología">Datos y metodología</h2>
+<p>Los cálculos parten de los microdatos de la Encuesta Nacional de Condiciones de Vida (ENCOVI) 2023 y se calculan con un procedimiento de análisis microeconómico de incidencia fiscal, que estima cómo el subsidio y las transferencias llegan a los hogares y cómo cambian su ingreso.</p>
+<p>La ENCOVI no mide bien el consumo de electricidad de cada hogar. Por eso el consumo mensual en kWh es imputado: se estima una distribución de consumo para cada hogar y se calibra a los registros administrativos de cada distribuidora. Los resultados por hogar o por grupos pequeños son, por lo tanto, sensibles a esa imputación y deben leerse con cautela.</p>
+<p>Para un recorrido paso a paso, vea el <a href="./instructivo.html">instructivo</a>.</p>
 
 
+</section>
 
 </main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
@@ -166,12 +384,12 @@ ul.task-list li input[type="checkbox"] {
       // flash "checked"
       button.classList.add('code-copy-button-checked');
       var currentTitle = button.getAttribute("title");
-      button.setAttribute("title", "Copied!");
+      button.setAttribute("title", "Copiado");
       let tooltip;
       if (window.bootstrap) {
         button.setAttribute("data-bs-toggle", "tooltip");
         button.setAttribute("data-bs-placement", "left");
-        button.setAttribute("data-bs-title", "Copied!");
+        button.setAttribute("data-bs-title", "Copiado");
         tooltip = new bootstrap.Tooltip(button, 
           { trigger: "manual", 
             customClass: "code-copy-button-tooltip",

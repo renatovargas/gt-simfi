@@ -1,0 +1,38 @@
+# Mapa de scripts de referencia: un renglón por script. Actualizar solo cuando
+# sync_reference() reporte un script nuevo o reestructurado.
+
+pipeline_map <- data.frame(
+  archivo = c("00_GTM26SUB_Master.R", "x_GTM26SUB_funciones.R",
+              "01_GTM26SUB_BaseIngreso.R", "06_GTM26SUB_BaseIngreso.R",
+              "06_GTM26SUB_BaseIngreso_fix.R", "02_GTM26SUB_Subsidio.R",
+              "03_GTM26SUB_Transferencia.R", "04_GTM26SUB_Consolida.R",
+              "05_GTM26SUB_Reportes.R"),
+  capa = c("config", "funciones", "B", "B", "B", "C", "C", "C", "D"),
+  fase = c("referencia", "engine", "offline", "offline", "offline",
+           "engine", "engine", "engine", "export"),
+  entradas = c("hojas global_params y escenarios",
+               "-",
+               "DispIncome.RDS, energia_ajustado.rds",
+               "ENCOVI (3 archivos), kwh administrativos, DispIncome",
+               "ENCOVI (3 archivos), kwh administrativos, DispIncome",
+               "hoja sim_sub, energia_ajustado.rds",
+               "hojas escenarios y sim_extra, disp_income.rds",
+               "disp_income.rds, GTM_subeleh, GTM_tarifas, GTM_simcomp, parm_glob",
+               "GTM_resumen, shapefile opcional"),
+  salidas = c("OPC, escenarios, parm_glob (solo lectura: no se ejecuta)",
+              "funciones puras",
+              "disp_income.rds",
+              "energia_ajustado.rds, disp_income.rds (no usar: versión rota)",
+              "energia_ajustado.rds, disp_income.rds (usar en lugar de 06)",
+              "GTM_subeleh.rds, GTM_tarifas.rds",
+              "GTM_simcomp.rds",
+              "GTM_simulaciones_subsidio.rds, GTM_resumen.rds",
+              "libro Excel, GTM_insumos.rds"),
+  depende_de = c("-", "-", "x_funciones", "x_funciones", "x_funciones",
+                 "x_funciones, escenarios", "x_funciones, escenarios",
+                 "02, 03", "04"),
+  envoltorio = c("-", "make_ref_env()", "(offline)", "(offline)", "(offline)",
+                 "run_schemes()", "run_compensations()", "run_consolidation()",
+                 "(descartado: la app no usa 05)"),
+  stringsAsFactors = FALSE
+)

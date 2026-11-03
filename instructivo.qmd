@@ -1,0 +1,45 @@
+---
+title: "Instructivo"
+subtitle: "Recorrido paso a paso"
+lang: es
+---
+
+Este recorrido construye un escenario de ejemplo y lo compara con la situación base. Los nombres y montos son ilustrativos.
+
+## 1. Iniciar la app
+
+Con la carpeta del proyecto abierta y los paquetes instalados (ver la [página principal](index.qmd)), ejecute en la consola de R:
+
+```r
+shiny::runApp()
+```
+
+## 2. Definir un esquema tarifario
+
+1. Abra la pestaña «1 · Esquemas tarifarios». Los campos muestran la tarifa vigente.
+2. Modifique los valores que quiera cambiar, por ejemplo la tarifa objetivo de un tramo en una distribuidora.
+3. Escriba un nombre en «Nombre del esquema» y guarde. La insignia pasa de «sin guardar» a «guardado».
+
+Con la tarifa objetivo vacía, el tramo no recibe subsidio.
+
+## 3. Definir una compensación
+
+1. Abra la pestaña «2 · Compensaciones».
+2. En «¿A quién se compensa?» elija un grupo y complete los campos que aparecen (decil, monto mensual por hogar, porcentaje o consumo máximo).
+3. Escriba un nombre y guarde.
+
+## 4. Armar el escenario
+
+1. Abra la pestaña «3 · Escenarios».
+2. Escriba el nombre del escenario y elija el esquema y la compensación guardados.
+3. Presione «Agregar escenario a la lista». Se marca para comparar automáticamente mientras haya menos de cuatro marcados.
+
+## 5. Simular y leer los resultados
+
+1. Abra la pestaña «4 · Simular» y presione «Simular».
+2. Consulte la «Leyenda de los escenarios» para ubicar cada «Escenario N».
+3. Revise «Resumen» y luego las vistas de pobreza, desigualdad, costo fiscal e incidencia. Compare «Base», «Cambio en subsidio» y «Con compensación».
+
+## 6. Guardar el trabajo
+
+En la pestaña «3 · Escenarios», use «Exportar biblioteca y escenarios (Excel)» para guardar el trabajo o compartirlo, e «Importar (.xlsx)» para recuperarlo. Para empezar desde cero, use «Nueva sesión (borrar todo)».

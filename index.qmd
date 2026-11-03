@@ -1,7 +1,106 @@
 ---
-title: "GT SIMFI"
+title: "Microsimulación del subsidio eléctrico en Guatemala"
+subtitle: "GT SIMFI"
+lang: es
 ---
 
-This is a Quarto website.
+Aplicación para simular cómo cambian la pobreza, la desigualdad y el costo fiscal cuando se modifican los esquemas tarifarios del subsidio a la electricidad y las transferencias compensatorias. Los cálculos usan los microdatos de la ENCOVI 2023.
 
-To learn more about Quarto websites visit <https://quarto.org/docs/websites>.
+::: {.descarga}
+[Descargar la app](https://github.com/renatovargas/gt-simfi/archive/refs/heads/main.zip){.btn .btn-primary .btn-lg}
+:::
+
+La app se corre en su propia computadora. Esta página es estática y no ejecuta la simulación.
+
+## Requisitos e instalación
+
+1. Instale la versión actual de [R](https://cran.r-project.org/) y un entorno de trabajo, como [Positron](https://positron.posit.co/) o RStudio.
+2. Instale los paquetes una sola vez desde la consola de R:
+
+```r
+install.packages(c(
+  "shiny", "bslib", "DT", "plotly", "htmltools", "jsonlite", "rlang",
+  "readxl", "openxlsx", "janitor", "tidyverse", "data.table", "statar",
+  "scales", "collapse", "ragg", "sf", "haven"
+))
+```
+
+3. Descargue el archivo zip con el botón de arriba y descomprímalo.
+4. Abra la carpeta descomprimida completa en Positron (*Open Folder*) o RStudio (como proyecto o con *Session > Set Working Directory*), no solo el archivo `app.R`. Las rutas de la app son relativas a esa carpeta.
+5. Lance la app desde la consola de R:
+
+```r
+shiny::runApp()
+```
+
+Si la app no arranca, detenga el servidor, verifique que la carpeta abierta es la raíz del proyecto y que los paquetes se instalaron sin errores, y vuelva a lanzarla.
+
+## Flujo de uso
+
+La app tiene cuatro pestañas que se recorren en orden.
+
+**1. Esquemas tarifarios.** Se define cómo se subsidia el consumo: los tramos de consumo (kWh por mes) y, para cada distribuidora, la tarifa plena, la tarifa objetivo y el cargo fijo de cada tramo, junto con la tarifa tope y la tarifa plena general. Se parte de la tarifa vigente o de un esquema guardado, se modifican los valores y se guarda con un nombre.
+
+**2. Compensaciones.** Se define a quién se compensa y con qué monto mensual por hogar. Hay tres grupos de beneficiarios, además de la opción «Sin compensación»:
+
+- hogares hasta cierto decil de ingreso, con monto fijo;
+- beneficiarios del bono social, con monto fijo o como porcentaje de la mediana anual del bono;
+- hogares con bajo consumo de electricidad (menos de cierto número de kWh por mes), con monto fijo.
+
+**3. Escenarios.** Un escenario combina un esquema tarifario y una compensación de las guardadas. La opción «Tarifa vigente (situación actual)» o «Sin compensación» deja esa parte sin cambio; un escenario debe modificar al menos una de las dos. Se pueden crear los escenarios que se quiera y marcar hasta **4** para comparar. La situación base se incluye siempre.
+
+**4. Simular.** El botón «Simular» corre los escenarios marcados. Los resultados se organizan en siete vistas:
+
+| Vista | Contenido |
+|---|---|
+| Resumen | Indicadores principales de cada escenario |
+| Pobreza | Tasa de pobreza (general, extrema o con línea internacional) y brecha de pobreza |
+| Desigualdad | Gini, Palma y medidas de concentración por instrumento |
+| Costo fiscal | Costo anual en millones de Q y como porcentaje del PIB |
+| Incidencia | Efecto por deciles, estrato, área, sexo del jefe de hogar, categoría de hogar y regiones (con mapa regional) |
+| Estratos | Distribución de la población por estrato de ingreso |
+| Tarifas | Tarifas resultantes de cada escenario |
+
+Si cambia la configuración después de simular, la app avisa que los resultados ya no corresponden y hay que volver a simular.
+
+## Cómo leer los resultados
+
+**Base y escenarios.** «Base» es la situación actual, con la tarifa vigente y sin compensación. Los escenarios aparecen como «Escenario 1», «Escenario 2», etc. La tabla «Leyenda de los escenarios», al inicio de los resultados, indica el nombre completo, el esquema y la compensación de cada uno. Al pasar el cursor sobre los gráficos se ve el detalle y el valor exacto.
+
+**Tres columnas de ingreso.** Pobreza, desigualdad y estratos se calculan sobre el ingreso per cápita del hogar en tres casos:
+
+| Columna | Significado |
+|---|---|
+| Base | Ingreso con la tarifa vigente |
+| Cambio en subsidio | Efecto de la reforma tarifaria solamente |
+| Con compensación | Efecto de la reforma más la transferencia compensatoria |
+
+**Unidades de la vista de incidencia.**
+
+| Unidad | Interpretación |
+|---|---|
+| Millones de Q por año | Monto anual del instrumento para el grupo |
+| % del ingreso disponible del grupo | Peso del monto en el ingreso del grupo |
+| % del total (concentración) | Parte del monto total que recibe el grupo |
+| % del PIB | Monto como porcentaje del producto interno bruto |
+| % de personas del grupo | Cobertura: personas del grupo que se ven alcanzadas |
+
+Los gráficos se pueden descargar como imagen PNG con la barra que aparece sobre cada uno.
+
+## Guardar y compartir
+
+En la pestaña «Escenarios», la sección «Guardar y compartir» permite:
+
+- **Exportar** la biblioteca y los escenarios a un archivo Excel con tres hojas: esquemas, compensaciones y escenarios.
+- **Importar** un archivo Excel con ese formato, por ejemplo uno recibido de otra persona o editado a mano. Los escenarios que citan componentes inexistentes se omiten.
+- **Nueva sesión**, que borra esquemas, compensaciones, escenarios y resultados.
+
+El trabajo también se guarda automáticamente en el equipo y se restaura al abrir la app de nuevo.
+
+## Datos y metodología
+
+Los cálculos parten de los microdatos de la Encuesta Nacional de Condiciones de Vida (ENCOVI) 2023 y se calculan con un procedimiento de análisis microeconómico de incidencia fiscal, que estima cómo el subsidio y las transferencias llegan a los hogares y cómo cambian su ingreso.
+
+La ENCOVI no mide bien el consumo de electricidad de cada hogar. Por eso el consumo mensual en kWh es imputado: se estima una distribución de consumo para cada hogar y se calibra a los registros administrativos de cada distribuidora. Los resultados por hogar o por grupos pequeños son, por lo tanto, sensibles a esa imputación y deben leerse con cautela.
+
+Para un recorrido paso a paso, vea el [instructivo](instructivo.qmd).

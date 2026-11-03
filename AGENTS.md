@@ -29,7 +29,7 @@ El repo es **nuevo y separado**. Reutiliza dos repos hermanos como referencia, q
   r_presim/          RDS usados por el pipeline R (DispIncome.RDS, disp_income.rds, energia_ajustado.rds, ENCOVI)
   r_mod/             Resultados del colega: fixtures de oro (GTM_resumen, GTM_subeleh, GTM_simcomp,
                      GTM_simulaciones_subsidio, GTM_tarifas, GTM_insumos)
-  input/             GTM23SUB_parametros.xlsx (parámetros), shp/ (shapefile incompleto: solo .shp, cambiar por geojson en data/gis/departamentos_guatemala.json), adm/ (kWh administrativos)
+  input/             GTM23SUB_parametros.xlsx (parámetros), el mapa usa el geojson `data/gis/departamentos_guatemala.json` (ya en el repo; reemplaza al shapefile, que no se usa), adm/ (kWh administrativos)
   raw/ presim/ dbmod/ temp/   Árbol de Stata (.dta). No leer: es el flujo antiguo.
 02_codigo/
   scripts_R/         Pipeline R. Cadena activa: 00 Master -> 01 BaseIngreso -> 02 Subsidio -> 03 Transferencia
@@ -84,7 +84,7 @@ Manifiesto de copia inicial (rutas relativas a `../GTM_ELEC`):
 | `02_codigo/do_files/ados/GTM26SUB_resultados_26_Sep_2026.xlsx` | `tests/fixtures/` |
 | `handover.md` | raíz (si aún no está) |
 
-No copiar: scripts `07`-`10`, `.do` de Stata, ENCOVI cruda, `kwh_*.xlsx`, `GTM23SUB_parametros - Copy.xlsx` ni el shapefile incompleto (se agrega cuando llegue completo).
+No copiar: scripts `07`-`10`, `.do` de Stata, ENCOVI cruda, `kwh_*.xlsx`, `GTM23SUB_parametros - Copy.xlsx` ni el shapefile (el mapa usa `data/gis/departamentos_guatemala.json`).
 
 Estructura objetivo del repo (detalle en `handover.md` sección 5.4):
 
@@ -93,12 +93,11 @@ app.R        punto de entrada de la app Shiny
 index.qmd    página principal del sitio Quarto (guía de descarga y manual de usuario); _quarto.yml en la raíz
 handover.md  diseño de la app (no se renderiza; ver sección "Sitio Quarto")
 reference/   copia verbatim del pipeline del colega (zona de entrega, inmutable)
-R/           config.R, adapter_*.R, data_load.R, sync_reference.R, pipeline_map.R
+R/           config.R, adapter_*.R, base_scenario.R, results_views.R, map_views.R, data_load.R, sync_reference.R, pipeline_map.R
 mod_*.R      módulos Shiny
 data-raw/    constructores offline de los RDS y MANIFEST
-data/        RDS (capas A/B) + MANIFEST
+data/        RDS (capas A/B, incluido base_scenario.rds) + MANIFEST + gis/ (geojson original y regiones_guatemala.geojson derivado)
 tests/       pruebas de paridad + tests/fixtures/ (copias de 01_datos/r_mod)
-renv.lock
 ```
 
 ## Sitio Quarto (GitHub Pages) en el mismo repo
@@ -113,7 +112,7 @@ El repo contiene la app (`app.R`) y un sitio Quarto con la guía de descarga y e
 
 ## Despliegue: local primero, servidor como opción futura
 
-La forma principal de uso es **correr la app localmente** (por el costo de los cálculos); el sitio explica la descarga y la instalación (`renv`). Hospedarla en un servidor con `mirai` se considera una opción a explorar más adelante. No implementarla sin que se pida, pero diseñar para no cerrar esa puerta:
+La forma principal de uso es **correr la app localmente** (por el costo de los cálculos); el sitio explica la descarga y la instalación de los paquetes (sin `renv`). Hospedarla en un servidor con `mirai` se considera una opción a explorar más adelante. No implementarla sin que se pida, pero diseñar para no cerrar esa puerta:
 
 - Un único punto de entrada al motor (por ejemplo `run_scenario(tablas, session_dir)`) que no use `.GlobalEnv`, `setwd` ni rutas fijas y que escriba solo en un directorio temporal propio. La app solo llama a esa función.
 - Si se pasa a servidor: `shiny::ExtendedTask` + `mirai`, con los datos de `data/` cargados una vez por daemon (`mirai::everywhere()`), un directorio temporal por corrida y límite de memoria y de daemons acorde al servidor. Verificar con la prueba de aislamiento entre sesiones.
@@ -127,7 +126,32 @@ La forma principal de uso es **correr la app localmente** (por el costo de los c
 - **Corridas independientes.** Cada escenario se ejecuta de forma aislada (entorno propio). Límite de escenarios a comparar: **4** (más el escenario 0 de base). Definirlo en una sola constante en `R/config.R` y no repetir el número en el código.
 - **Tablas `DT`.** Usar `server = FALSE` en las tablas de resultados de la pestaña de simulación, para que se reinicialicen por completo cuando cambia el número de columnas de escenarios.
 - **Insumos por instrumento.** Una función construye el bloque de incidencia de cada instrumento a partir de los resultados, para que la UI no conozca la estructura interna.
-- **Jerarquía de ingreso (verificar antes de usar).** En `simfi-rd`, pobreza y desigualdad usan el ingreso final tras todos los instrumentos (`yz_pc`), no los intermedios. En GTM el equivalente son los ingresos por escenario `ys`/`yt` de `04_GTM26SUB_Consolida.R`. Confirmar en el código de `04` cuál se usa para pobreza y desigualdad antes de construir las vistas, y documentarlo aquí.
+- **Jerarquía de ingreso (verificada en `04`, líneas 111-115 y 216-226).** `ys<e>_pc = yd_pc + (subsidio del escenario − subsidio vigente)` (solo reforma tarifaria) y `yt<e>_pc = ys<e>_pc + compensación`. Pobreza (`pov_gral`, `pov_ext`, `pov_int`) y desigualdad (`ineq`) se calculan sobre tres ingresos: Base (`yd`/`ys0`), `ys` y `yt`; las vistas muestran las tres columnas ("Base", "Cambio en subsidio", "Con compensación"). Los estratos (`gr_estrato`, `gr_estrato<e>`, `gr_estratot<e>`) siguen la misma jerarquía. No hay un único "ingreso final": `yt` es el final con compensación, `ys` sin ella.
+- Significado de las vistas de grupos (`GTM_resumen$grupos`): `mil` = millones de Q/año, `inc` = % del ingreso disponible del grupo (incidencia), `con` = % del total (concentración), `pib` = % del PIB, `cob` = cobertura (% de personas del grupo).
+
+## Estructura de la app (UI)
+
+- `app.R` carga `R/*.R` y los `mod_*.R` de la raíz. Pestañas: Esquemas tarifarios, Compensaciones, Escenarios (composer + guardar/compartir) y Simular (resultados).
+- `R/adapter_compose.R`: `compose_scenario_inputs()`, `biblioteca_inicial()`, `normalizar_comp()` y los nombres de columna de `sim_sub`/`sim_extra` (`SUB_CAMPOS`, `COMP_CAMPOS`). Cada escenario se corre aislado con ids propios (esquema 1, compensación 1).
+- `R/adapter_results.R`: `combinar_resultados()` convierte `GTM_resumen` en data frames largos con claves; es el único código que conoce posiciones de filas/columnas del resumen. `ejecutar_escenarios()` corre cada escenario con `run_scenario()` y cachea por hash de las tablas.
+- `R/base_scenario.R`: `leer_base_scenario()`, `insumos_base()` y `base_vigente()` (ver «Base reconstruible»).
+- `R/results_views.R`: tablas DT y gráficos **plotly** (puros, solo consumen el objeto de resultados). Ejes y leyendas con etiquetas cortas («Base», «Escenario N», tabla `res$equivalencias` creada por `combinar_resultados()`); nombre completo, esquema, compensación y valor exacto en el hover (`text` + `hovertemplate`). La barra de plotly se configura en `config_plotly()` (solo descarga PNG). `R/map_views.R`: `mapa_region()`, coroplético regional. `R/scenario_store.R`: Excel (hojas `esquemas`, `compensaciones`, `escenarios`) y autosave en `app_state/`.
+- La corrida es síncrona; el paso a `ExtendedTask` + `mirai` queda para después (`mod_simulacion.R`).
+
+## Base reconstruible (escenario 0)
+
+- `04` recorre siempre el escenario 0 y exige al menos un escenario de reforma, así que no se puede saltar sin editar `reference/`: cada corrida de usuario lo recalcula internamente (≈1.6 s por escenario). La app **no usa** esa copia: la columna «Base» (pobreza, desigualdad, resumen, tarifas base) sale siempre de `data/base_scenario.rds` (`ejecutar_escenarios()` → `combinar_resultados(base = )`). Una prueba verifica que los resultados son idénticos con y sin el archivo.
+- Se construye con `data-raw/build_base_scenario.R` (desde la raíz; corre el motor con un escenario identidad: esquema 0, sin compensación) y registra en `data/MANIFEST` y `data/MANIFEST.rds` md5, fecha y commit de referencia. El archivo guarda el md5 de todo `reference/`, de los datos del motor, de `params_base.rds` y de `OPC`.
+- `base_vigente()` compara esos md5 con los actuales. Si no coinciden, `ejecutar_escenarios()` avisa (`warning` + aviso en la UI) y usa la base de la corrida. **Gancho:** `sync_reference()` (aún no existe) debe llamar `base_vigente()` al terminar y, si es FALSE, indicar que hay que correr `data-raw/build_base_scenario.R` y las pruebas. Tras cualquier cambio en `reference/` o en los datos, reconstruir la base.
+
+## Mapa
+
+- `data/gis/departamentos_guatemala.json` declara `EPSG::42500` (PROJ no lo reconoce; `sf` lo lee mal como WGS84) y sus coordenadas están en metros: es la proyección transversal de Mercator de Guatemala (GTM, meridiano central -90.5, k = 0.9998, falso este 500000, falso norte 0). EPSG:5367 es CRTM05 de Costa Rica y no sirve. Verificado por extensión (lon -92.24 a -88.22, lat 13.74 a 17.82) y centroide de Guatemala.
+- `data-raw/build_gis.R` genera `data/gis/regiones_guatemala.geojson` (8 regiones, WGS84, ~40 KB) disolviendo departamentos con `region_de_depto()` y `REGIONES` del colega; no edita el original. El pipeline entrega 8 regiones (`GTM_resumen$grupos$reg`), no departamentos, así que el mapa es regional. Propiedad de unión: `region_nom`.
+
+## Exportaciones
+
+- No hay exportación a Excel de resultados: **descartados** `adapter_export.R`, `run_report()` y el uso del script `05`. Las exportaciones son las de biblioteca y escenarios (`mod_sesion.R`) y la descarga PNG de la barra de plotly.
 
 ## Rutas y directorio de trabajo
 
@@ -143,7 +167,7 @@ La forma principal de uso es **correr la app localmente** (por el costo de los c
 - Usar `bslib` para la interfaz y el tema.
 - Escribir las letras acentuadas y la puntuación española (á, é, í, ó, ú, ñ, ü, ¿, ¡) como caracteres UTF-8 literales en el código. Para símbolos que no son letras (flechas, punto medio, raya, comillas angulares, puntos suspensivos, delta) se aceptan escapes `\uXXXX` en cadenas de R.
 - Codificación: todos los archivos en UTF-8. Al editar, verificar que no se corrompan los caracteres multibyte (`file -I`, o releer el archivo tras escribir). Con las herramientas actuales de edición de Positron esto no suele ser un problema, pero es un riesgo conocido de este proyecto.
-- Pipe nativo `|>`. Sin `install.packages()` en tiempo de ejecución; dependencias con `renv`.
+- Pipe nativo `|>`. Sin `install.packages()` en tiempo de ejecución; no se usa `renv`: los paquetes son estándar y estables; la lista de paquetes de la app es `PAQUETES_APP` en `R/config.R` (los del motor, `REF_PAQUETES`) y el sitio (`index.qmd`) la documenta; `plotly` es necesario.
 - Insignia de estado de componentes: "sin guardar" / "guardado" / "cambios sin guardar".
 
 ## Trampas conocidas del pipeline de referencia
@@ -153,8 +177,8 @@ La forma principal de uso es **correr la app localmente** (por el costo de los c
 - Los scripts `01`-`05` no llaman a `library()`; los paquetes salen de la lista del Master (líneas 32-43).
 - Hoja `sim_sub` tiene 3 esquemas (0, 1, 2). `GTM23SUB_parametros - Copy.xlsx` es un duplicado idéntico: ignorar. Las descripciones que dicen que el escenario 3 está inactivo están desactualizadas.
 - En el esquema 2, `todeoc3`/`todeor3` son NA: DEOCSA/DEORSA pagan tarifa plena en el tramo 3; EEGSA mantiene su subsidio. Parece intencional.
-- Shapefile incompleto (solo `.shp`): el mapa falla en silencio hasta recibir `.shx`, `.dbf`, `.prj`.
-- Pendientes con el colega, por prioridad: (1) **shapefile completo** (`.shx`, `.dbf`, `.prj`, `.cpg`), lo único que bloquea una funcionalidad (el mapa); (2) secundario: confirmar `06_GTM26SUB_BaseIngreso_fix.R` (o recibir su propia versión) y la semilla/procedimiento de los sorteos guardados. Esto último solo afecta la auditoría de la calibración, no la app.
+- Mapa: resuelto en `R/map_views.R` con `data/gis/regiones_guatemala.geojson` (ver sección «Mapa»). El script `05` no se usa.
+- Pendientes con el colega, por prioridad: (1) confirmar `06_GTM26SUB_BaseIngreso_fix.R` (o recibir su propia versión) y la semilla/procedimiento de los sorteos guardados. Esto último solo afecta la auditoría de la calibración, no la app.
 
 ## Tamaño de archivos versionados (sin Git LFS)
 

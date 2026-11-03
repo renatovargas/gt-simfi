@@ -1,0 +1,24 @@
+# MANIFEST de data/ (copia inicial desde ../GTM_ELEC)
+commit_origen: bd3f6317e70d5d0d02e8052cab2fe9fcba25da3b (el árbol de origen tenía cambios sin commit)
+fecha: 2026-11-03 11:48:39 CST
+
+5d39c04e6318ec887e770694f15e80be  data/disp_income.rds  <-  01_datos/r_presim/disp_income.rds
+3649f3a682d99089d7c3aea0b6ba3b3c  data/energia_ajustado.rds  <-  01_datos/r_presim/energia_ajustado.rds
+75db4bf05bbb833c67e33b58b3e4cee9  data/dispincome_raw.rds  <-  01_datos/r_presim/DispIncome.RDS
+be65b9dcdcd68ccf2d9aab0d2994fce9  data/params_base.rds  <-  reference/params/GTM23SUB_parametros.xlsx [hoja global_params]
+55195d60444f5c5897b257a2d37ff8e8  data/base_scenario.rds  <-  run_scenario() con escenario identidad (esquema 0, sin compensación)
+# insumos de data/base_scenario.rds (md5), construida 2026-11-03 12:43:23 CST, commit de referencia bd3f6317e70d5d0d02e8052cab2fe9fcba25da3b
+7555590f3af060137664d31fa19232aa  reference/params/GTM23SUB_parametros.xlsx
+ec3717f148ad2e273129995473e5f3cb  reference/scripts_R/00_GTM26SUB_Master.R
+6b40752677fec0a1b4e82607ca99867b  reference/scripts_R/01_GTM26SUB_BaseIngreso.R
+db848e1222c97bb9c4c3c0027f02f945  reference/scripts_R/02_GTM26SUB_Subsidio.R
+bb568cdbb6bf76eb86a45bb8c13f95b3  reference/scripts_R/03_GTM26SUB_Transferencia.R
+41dc2ca75936a13d50eba4db5d6b11fe  reference/scripts_R/04_GTM26SUB_Consolida.R
+885732a41144f74e6d36a447eefab6b7  reference/scripts_R/05_GTM26SUB_Reportes.R
+b23e3cbbc972476b49e2787b9dc6a609  reference/scripts_R/06_GTM26SUB_BaseIngreso_fix.R
+f887dda5af0434b76dc6c281e9f08a04  reference/scripts_R/06_GTM26SUB_BaseIngreso.R
+ec10dd27a36aad9f598d4570974d6691  reference/scripts_R/x_GTM26SUB_funciones.R
+5d39c04e6318ec887e770694f15e80be  data/disp_income.rds
+3649f3a682d99089d7c3aea0b6ba3b3c  data/energia_ajustado.rds
+be65b9dcdcd68ccf2d9aab0d2994fce9  data/params_base.rds
+8d274ea9d6d43660eab90d21ceaf718f  OPC (R/config.R)
