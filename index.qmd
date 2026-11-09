@@ -39,7 +39,7 @@ Si la app no arranca, detenga el servidor, verifique que la carpeta abierta es l
 
 La app tiene cuatro pestañas que se recorren en orden.
 
-**1. Esquemas tarifarios.** Se define cómo se subsidia el consumo: los tramos de consumo (kWh por mes) y, para cada distribuidora, la tarifa plena, la tarifa objetivo y el cargo fijo de cada tramo, junto con la tarifa tope y la tarifa plena general. Se parte de la tarifa vigente o de un esquema guardado, se modifican los valores y se guarda con un nombre.
+**1. Esquemas tarifarios.** Se define cómo se subsidia el consumo: los tramos de consumo (límite en kWh por mes, común a las tres distribuidoras) y, para cada distribuidora, la tarifa plena, la tarifa objetivo y el cargo fijo de cada tramo, junto con la tarifa tope y la tarifa plena general. Se parte de la tarifa vigente o de un esquema guardado, se modifican los valores y se guarda con un nombre.
 
 **2. Compensaciones.** Se define a quién se compensa y con qué monto mensual por hogar. Hay tres grupos de beneficiarios, además de la opción «Sin compensación»:
 
@@ -74,6 +74,8 @@ Si cambia la configuración después de simular, la app avisa que los resultados
 | Base | Ingreso con la tarifa vigente |
 | Cambio en subsidio | Efecto de la reforma tarifaria solamente |
 | Con compensación | Efecto de la reforma más la transferencia compensatoria |
+
+La columna «Con compensación» solo aparece en los escenarios que incluyen una compensación.
 
 **Unidades de la vista de incidencia.**
 

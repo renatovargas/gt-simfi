@@ -200,9 +200,11 @@ grafico_fiscal <- function(res) {
   esc <- res$nombres
   d <- rbind(
     data.frame(escenario = SERIE_BASE, componente = "Subsidio", valor = v("costo_base", esc[1])),
-    do.call(rbind, lapply(esc, \(e) data.frame(
-      escenario = e, componente = c("Subsidio", "Compensación"),
-      valor = c(v("costo_esc", e), v("costo_comp", e))))))
+    do.call(rbind, lapply(esc, \(e) {
+      con <- !isFALSE(res$con_compensacion[[e]])
+      data.frame(escenario = e, componente = c("Subsidio", "Compensación")[c(TRUE, con)],
+                 valor = c(v("costo_esc", e), v("costo_comp", e))[c(TRUE, con)])
+    })))
   d$x <- etiqueta_corta(res, d$escenario)
   d$color <- d$componente
   d$texto <- paste0(detalle_esc(res, d$escenario), "<br><b>", d$componente, "</b><br>",

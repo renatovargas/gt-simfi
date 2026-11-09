@@ -44,8 +44,14 @@ largo_matriz <- function(m, claves_fila, claves_col = NULL) {
 #'   las columnas "Base". Si es NULL se usan las de la primera corrida.
 #' @param descripciones data frame con `esquema` y `compensacion` (una fila por
 #'   escenario) para la tabla de equivalencias.
-combinar_resultados <- function(corridas, nombres, base = NULL, descripciones = NULL) {
-  stopifnot(length(corridas) == length(nombres), !anyDuplicated(nombres))
+#' @param con_compensacion lógico, uno por escenario. En los escenarios sin
+#'   compensación se omiten las columnas y series «Con compensación» (repetirían
+#'   «Cambio en subsidio»). Por defecto se conservan todas.
+combinar_resultados <- function(corridas, nombres, base = NULL, descripciones = NULL,
+                                con_compensacion = rep(TRUE, length(nombres))) {
+  stopifnot(length(corridas) == length(nombres), !anyDuplicated(nombres),
+            length(con_compensacion) == length(nombres))
+  sin_comp <- nombres[!con_compensacion]
   es <- lapply(corridas, \(c) c$resumen$escenario_1)
   r1 <- corridas[[1]]$resumen
   corrida_base <- base %||% corridas[[1]]
@@ -66,6 +72,7 @@ combinar_resultados <- function(corridas, nombres, base = NULL, descripciones = 
       b$escenario <- nombres[1]
       b$orden <- 1L
       d <- rbind(b[b$col == 1L, , drop = FALSE], d[d$col != 1L, , drop = FALSE])
+      d <- d[!(d$col == 3L & d$escenario %in% sin_comp), , drop = FALSE]
       d$ingreso <- factor(ING_ETIQUETA[d$col], levels = ING_ETIQUETA)
       d$serie <- serie(d$escenario, d$col)
       d$escenario <- ifelse(d$col == 1L, SERIE_BASE, d$escenario)
@@ -89,6 +96,7 @@ combinar_resultados <- function(corridas, nombres, base = NULL, descripciones = 
     d$instrumento <- rownames(e$kakwani)[d$col]
     d
   }, con_ingreso = FALSE)
+  kakwani <- kakwani[!(kakwani$clave_instr == "compensacion" & kakwani$escenario %in% sin_comp), ]
 
   fiscal <- apilar(\(e) data.frame(
     clave = CLAVES_FIS, indicador = names(e$fis), valor = unname(e$fis),
@@ -101,6 +109,8 @@ combinar_resultados <- function(corridas, nombres, base = NULL, descripciones = 
     d$columna <- colnames(e$mov)[d$col]
     d
   }, con_ingreso = FALSE)
+  estratos <- estratos[!(estratos$clave_col %in% c("esc_comp", "d_comp") &
+                           estratos$escenario %in% sin_comp), ]
 
   # Grupos: una fila por escenario x grupo x vista x categoría x medida
   grupos <- apilar(\(e) {
@@ -142,10 +152,11 @@ combinar_resultados <- function(corridas, nombres, base = NULL, descripciones = 
   # Matriz de indicadores principales: Base + (subsidio, + compensación) por escenario
   mats <- lapply(corridas, \(c) attr(c$resumen, "resumen"))
   mat_base <- attr(corrida_base$resumen, "resumen")
+  cols_esc <- \(i) if (con_compensacion[i]) 2:3 else 2L
   resumen <- do.call(cbind, c(list(mat_base[, 1, drop = FALSE]),
-                              lapply(mats, \(m) m[, 2:3, drop = FALSE])))
+                              lapply(seq_along(mats), \(i) mats[[i]][, cols_esc(i), drop = FALSE])))
   colnames(resumen) <- c("Base (subsidio vigente)", unlist(lapply(seq_along(nombres), \(i)
-    paste0("Escenario ", i, c(": cambio en subsidio", ": + compensación")))))
+    paste0("Escenario ", i, c(": cambio en subsidio", ": + compensación")[cols_esc(i) - 1L]))))
 
   meta_g <- attr(r1, "grupos")
   etiquetas <- paste("Escenario", seq_along(nombres))
@@ -158,6 +169,7 @@ combinar_resultados <- function(corridas, nombres, base = NULL, descripciones = 
     stringsAsFactors = FALSE)
   list(
     nombres     = nombres,
+    con_compensacion = setNames(con_compensacion, nombres),
     equivalencias = equivalencias,
     resumen     = resumen,
     pobreza     = pobreza,
@@ -211,10 +223,17 @@ ejecutar_escenarios <- function(escenarios, libs, plantilla = tablas_escenario_p
     esquema      = vapply(escenarios, \(e) nom_ref(e$sub, "Tarifas vigentes"), ""),
     compensacion = vapply(escenarios, \(e) nom_ref(e$comp, "Sin compensación"), ""),
     stringsAsFactors = FALSE)
-  res <- combinar_resultados(corridas, nombres, base = corrida_base, descripciones = descripciones)
+  res <- combinar_resultados(corridas, nombres, base = corrida_base, descripciones = descripciones,
+                             con_compensacion = vapply(escenarios, tiene_compensacion, logical(1), libs = libs))
   res$base_desde_archivo <- !is.null(corrida_base)
   res$base_estado <- estado_base
   res
+}
+
+#' ¿El escenario tiene una compensación efectiva? (componente elegido y con grupo 1-3).
+tiene_compensacion <- function(escenario, libs) {
+  k <- normalizar_ref(escenario$comp)
+  nzchar(k) && isTRUE(as.numeric(libs$comp[[k]]$grupo_com %||% 0) %in% 1:3)
 }
 
 #' Corrige las etiquetas de sexo del jefe de hogar en `grupos` (ver combinar_resultados()).

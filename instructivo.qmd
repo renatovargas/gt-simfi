@@ -38,7 +38,7 @@ Con la tarifa objetivo vacía, el tramo no recibe subsidio.
 
 1. Abra la pestaña «4 · Simular» y presione «Simular».
 2. Consulte la «Leyenda de los escenarios» para ubicar cada «Escenario N».
-3. Revise «Resumen» y luego las vistas de pobreza, desigualdad, costo fiscal e incidencia. Compare «Base», «Cambio en subsidio» y «Con compensación».
+3. Revise «Resumen» y luego las vistas de pobreza, desigualdad, costo fiscal e incidencia. Compare «Base», «Cambio en subsidio» y «Con compensación». Esta última solo aparece si el escenario incluye una compensación.
 
 ## 6. Guardar el trabajo
 

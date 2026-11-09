@@ -112,3 +112,19 @@ test_that("el mapa regional es una función pura con hover", {
   # Medida de cobertura también se puede mapear
   expect_s3_class(mapa_region(res, geo, res$nombres[2], "cob", "rec_esc"), "plotly")
 })
+
+test_that("un escenario sin compensación no muestra la serie «Con compensación»", {
+  expect_equal(unname(res$con_compensacion), c(TRUE, FALSE))
+  expect_equal(colnames(res$resumen),
+               c("Base (subsidio vigente)", "Escenario 1: cambio en subsidio",
+                 "Escenario 1: + compensación", "Escenario 2: cambio en subsidio"))
+  expect_false(any(res$pobreza$escenario == "Solo tarifa" & res$pobreza$col == 3L))
+  expect_false(any(res$desigualdad$escenario == "Solo tarifa" & res$desigualdad$col == 3L))
+  expect_true(any(res$pobreza$escenario == e[[1]]$name & res$pobreza$col == 3L))
+  expect_false(any(res$estratos$escenario == "Solo tarifa" & res$estratos$clave_col == "esc_comp"))
+  expect_false(any(res$kakwani$escenario == "Solo tarifa" & res$kakwani$clave_instr == "compensacion"))
+  expect_false(any(grepl("Escenario 2: \\+ compensación", names(tabla_pobreza(res, "general")))))
+  fis <- datos_trazas(grafico_fiscal(res))
+  comp <- Filter(\(t) identical(t$name, "Compensación"), fis)[[1]]
+  expect_false("Escenario 2" %in% comp$x)
+})

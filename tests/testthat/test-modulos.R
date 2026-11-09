@@ -51,7 +51,7 @@ test_that("la biblioteca carga valores sin poner nombre y pide confirmar antes d
   testServer(mod_esquema_server, args = list(estado = estado, plantilla = plantilla), {
     # testServer no aplica los update*Input: se fijan los límites de tramo a mano
     lim <- setNames(as.list(c(0, 50, 100, 150, 200, 300, 400)[seq_along(SUB_CAMPOS_LIMITE)]),
-                    SUB_CAMPOS_LIMITE)
+                    esq_id_limite(seq_along(SUB_CAMPOS_LIMITE), "eeg"))
     do.call(session$setInputs, lim)
     session$setInputs(cargar = nm0)
     expect_equal(input$nombre %||% "", "")
