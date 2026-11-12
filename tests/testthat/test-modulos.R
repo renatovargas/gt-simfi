@@ -9,7 +9,7 @@ for (f in c("results_views.R", "map_views.R", "ui_helpers.R", "adapter_compose.R
 for (f in c("mod_resultados.R", "mod_simulacion.R")) source(file.path(raiz, f), encoding = "UTF-8")
 
 plantilla <- tablas_escenario_plantilla()
-libs <- biblioteca_inicial(plantilla)
+libs <- biblioteca_ejemplo(plantilla)
 
 test_that("Simular llena los resultados con etiquetas y base vigente", {
   estado <- reactiveValues(
@@ -32,7 +32,7 @@ test_that("las salidas de resultados se generan, incluido el mapa", {
     session$setInputs(tipo_pob = "general", vista = "mil", medida = "neto", esc_mapa = "Reforma",
                       esc_tar = "Reforma")
     for (o in c("g_pob_tasa", "g_pob_fgt1", "g_gini", "g_palma", "g_fiscal", "g_fiscal_pib",
-                "g_estratos", "g_reg", "g_dec", "mapa_reg")) {
+                "g_reg", "g_dec", "mapa_reg")) {
       expect_match(output[[o]], "plotly|x", info = o)
     }
     expect_false(is.null(output$tbl_equiv))
@@ -49,9 +49,11 @@ test_that("la biblioteca carga valores sin poner nombre y pide confirmar antes d
   estado <- reactiveValues(libs = libs, escenarios = list())
   nm0 <- names(libs$sub)[1]
   testServer(mod_esquema_server, args = list(estado = estado, plantilla = plantilla), {
-    # testServer no aplica los update*Input: se fijan los límites de tramo a mano
-    lim <- setNames(as.list(c(0, 50, 100, 150, 200, 300, 400)[seq_along(SUB_CAMPOS_LIMITE)]),
-                    esq_id_limite(seq_along(SUB_CAMPOS_LIMITE), "eeg"))
+    # testServer no aplica los update*Input: se fijan a mano los valores del esquema
+    p0 <- libs$sub[[nm0]]
+    campos <- setdiff(SUB_CAMPOS, c(SUB_CAMPOS_LIMITE, paste0("tplena", names(SUB_DISTRIBUIDORAS))))
+    do.call(session$setInputs, p0[campos])
+    lim <- setNames(p0[SUB_CAMPOS_LIMITE], esq_id_limite(seq_along(SUB_CAMPOS_LIMITE), "eeg"))
     do.call(session$setInputs, lim)
     session$setInputs(cargar = nm0)
     expect_equal(input$nombre %||% "", "")
@@ -62,4 +64,37 @@ test_that("la biblioteca carga valores sin poner nombre y pide confirmar antes d
     session$setInputs(nombre = "Nuevo esquema", guardar = 2)
     expect_true("Nuevo esquema" %in% names(estado$libs$sub))
   })
+})
+
+test_that("la lista de escenarios marca, limita y elimina por fila", {
+  source(file.path(raiz, "mod_composer.R"), encoding = "UTF-8")
+  esc <- lapply(1:5, \(i) list(name = paste("E", i), sub = names(libs$sub)[1], comp = "", comparar = i <= 4))
+  estado <- reactiveValues(libs = libs, escenarios = esc)
+  testServer(mod_composer_server, args = list(estado = estado), {
+    session$setInputs(marcar = list(nombre = "E 5", valor = TRUE))
+    expect_false(estado$escenarios[[5]]$comparar)
+    session$setInputs(marcar = list(nombre = "E 1", valor = FALSE))
+    expect_false(estado$escenarios[[1]]$comparar)
+    session$setInputs(marcar = list(nombre = "E 5", valor = TRUE))
+    expect_true(estado$escenarios[[5]]$comparar)
+    session$setInputs(borrar = "E 2")
+    expect_equal(vapply(estado$escenarios, `[[`, "", "name"), c("E 1", "E 3", "E 4", "E 5"))
+    expect_match(as.character(output$lista$html), "fa-trash")
+  })
+})
+
+test_that("un error del motor indica el escenario que falló", {
+  env <- environment(ejecutar_escenarios)
+  original <- get("run_scenario", envir = env)
+  assign("run_scenario", \(...) stop("fallo interno"), envir = env)
+  on.exit(assign("run_scenario", original, envir = env), add = TRUE)
+  expect_error(ejecutar_escenarios(list(list(name = "Roto", sub = names(libs$sub)[1], comp = "")), libs, plantilla),
+               "Escenario «Roto»: fallo interno")
+})
+
+test_that("la app no muestra la tarifa plena general ni la pestaña de estratos", {
+  source(file.path(raiz, "mod_esquema.R"), encoding = "UTF-8")
+  html <- as.character(mod_esquema_ui("esq"))
+  expect_false(grepl("tplena|Tarifa plena general", html))
+  expect_false(any(grepl("\"Estratos\"", readLines(file.path(raiz, "mod_resultados.R"), encoding = "UTF-8"))))
 })

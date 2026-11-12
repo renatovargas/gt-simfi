@@ -1,7 +1,7 @@
 source(file.path(raiz, "R", "adapter_compose.R"), encoding = "UTF-8")
 
 plantilla <- tablas_escenario_plantilla()
-libs <- biblioteca_inicial(plantilla)
+libs <- biblioteca_ejemplo(plantilla)
 esc <- list(name = "Reforma de prueba",
             sub = "Descuento porcentual focalizado por bloque",
             comp = "Bono social: 150 % de la mediana")
@@ -96,4 +96,22 @@ test_that("ida y vuelta de la biblioteca por Excel", {
   expect_equal(l$escenarios[[1]]$name, "X")
   expect_true(l$escenarios[[1]]$comparar)
   expect_equal(normalizar_ref(l$escenarios[[1]]$comp), "")
+})
+
+test_that("una sesión nueva arranca sin componentes de ejemplo", {
+  expect_equal(biblioteca_inicial(), list(sub = list(), comp = list()))
+})
+
+test_that("validar_esquema acepta la tarifa vigente y los ejemplos, y detecta faltantes", {
+  base <- payload_sub_desde_fila(plantilla$sim_sub[plantilla$sim_sub$sim_sub == 0, ])
+  expect_length(validar_esquema(base), 0)
+  for (p in libs$sub) expect_length(validar_esquema(p), 0)
+  sin_tope <- base; sin_tope$ttdeoc <- NA_real_
+  expect_match(validar_esquema(sin_tope), "tarifa tope de DEOCSA")
+  sin_plena <- base; sin_plena$block6 <- 500
+  expect_match(validar_esquema(sin_plena), "tramo 6", all = FALSE)
+  hueco <- base; hueco$block3 <- NA_real_
+  expect_match(validar_esquema(hueco), "sin dejar huecos", all = FALSE)
+  l2 <- list(sub = list(malo = sin_tope), comp = list())
+  expect_match(validar_escenarios(list(list(name = "E", sub = "malo", comp = "")), l2), "«malo» está incompleto")
 })

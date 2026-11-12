@@ -42,7 +42,9 @@ mod_resultados_server <- function(id, res) {
           layout_columns(col_widths = c(6, 6),
             card(card_header("Costo anual (millones de Q)"), plotly::plotlyOutput(ns("g_fiscal"), height = "340px")),
             card(card_header("Costo total (% del PIB)"), plotly::plotlyOutput(ns("g_fiscal_pib"), height = "340px"))),
-          card(card_header("Cuadro fiscal"), DT::DTOutput(ns("tbl_fiscal")))),
+          card(card_header("Cuadro fiscal"), DT::DTOutput(ns("tbl_fiscal"))),
+          p(class = "small text-muted",
+            "Montos en quetzales de 2023, con la población de la ENCOVI 2023.")),
         nav_panel("Incidencia",
           layout_columns(col_widths = c(5, 7),
             radioButtons(ns("vista"), "Unidad", choices = setNames(names(VISTAS_ETIQ), unname(VISTAS_ETIQ))),
@@ -56,10 +58,6 @@ mod_resultados_server <- function(id, res) {
               plotly::plotlyOutput(ns("mapa_reg"), height = "460px")),
             plotly::plotlyOutput(ns(paste0("g_", g)), height = "380px"),
             DT::DTOutput(ns(paste0("t_", g))))))))),
-        nav_panel("Estratos",
-          p(class = "small text-muted",
-            "Distribución de la población por estrato de ingreso según el ingreso per cápita del hogar."),
-          plotly::plotlyOutput(ns("g_estratos"), height = "420px")),
         nav_panel("Tarifas",
           selectInput(ns("esc_tar"), "Escenario", choices = c(SERIE_BASE, res()$nombres), selected = res()$nombres[1]),
           DT::DTOutput(ns("tbl_tar")))
@@ -81,7 +79,6 @@ mod_resultados_server <- function(id, res) {
     output$g_palma <- plotly::renderPlotly({ req(res()); grafico_desigualdad(res(), "palma") })
     output$g_fiscal <- plotly::renderPlotly({ req(res()); grafico_fiscal(res()) })
     output$g_fiscal_pib <- plotly::renderPlotly({ req(res()); grafico_costo_pib(res()) })
-    output$g_estratos <- plotly::renderPlotly({ req(res()); grafico_estratos(res()) })
 
     # Incidencia: la medida disponible depende de la unidad elegida
     output$sel_medida <- renderUI({

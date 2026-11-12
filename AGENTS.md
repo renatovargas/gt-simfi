@@ -131,8 +131,8 @@ La forma principal de uso es **correr la app localmente** (por el costo de los c
 
 ## Estructura de la app (UI)
 
-- `app.R` carga `R/*.R` y los `mod_*.R` de la raíz. Pestañas: Esquemas tarifarios, Compensaciones, Escenarios (composer + guardar/compartir) y Simular (resultados).
-- `R/adapter_compose.R`: `compose_scenario_inputs()`, `biblioteca_inicial()`, `normalizar_comp()` y los nombres de columna de `sim_sub`/`sim_extra` (`SUB_CAMPOS`, `COMP_CAMPOS`). Cada escenario se corre aislado con ids propios (esquema 1, compensación 1).
+- `app.R` carga `R/*.R` y los `mod_*.R` de la raíz. Pestañas: Instructivo (`R/instructivo.R`; diagramas en `www/img/`, generados con `data-raw/build_instructivo_img.R`), Esquemas tarifarios, Compensaciones, Escenarios (composer con casilla «Comparar» y papelera por fila + guardar/compartir) y Simular (resultados).
+- `R/adapter_compose.R`: `compose_scenario_inputs()`, `biblioteca_inicial()` (vacía: una sesión nueva no trae componentes), `biblioteca_ejemplo()` (solo pruebas), `validar_esquema()`, `normalizar_comp()` y los nombres de columna de `sim_sub`/`sim_extra` (`SUB_CAMPOS`, `COMP_CAMPOS`). Cada escenario se corre aislado con ids propios (esquema 1, compensación 1).
 - `R/adapter_results.R`: `combinar_resultados()` convierte `GTM_resumen` en data frames largos con claves; es el único código que conoce posiciones de filas/columnas del resumen. `ejecutar_escenarios()` corre cada escenario con `run_scenario()` y cachea por hash de las tablas.
 - `R/base_scenario.R`: `leer_base_scenario()`, `insumos_base()` y `base_vigente()` (ver «Base reconstruible»).
 - `R/results_views.R`: tablas DT y gráficos **plotly** (puros, solo consumen el objeto de resultados). Ejes y leyendas con etiquetas cortas («Base», «Escenario N», tabla `res$equivalencias` creada por `combinar_resultados()`); nombre completo, esquema, compensación y valor exacto en el hover (`text` + `hovertemplate`). La barra de plotly se configura en `config_plotly()` (solo descarga PNG). `R/map_views.R`: `mapa_region()`, coroplético regional. `R/scenario_store.R`: Excel (hojas `esquemas`, `compensaciones`, `escenarios`) y autosave en `app_state/`.

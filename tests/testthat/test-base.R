@@ -3,7 +3,7 @@
 
 source(file.path(raiz, "R", "adapter_compose.R"), encoding = "UTF-8")
 plantilla <- tablas_escenario_plantilla()
-libs <- biblioteca_inicial(plantilla)
+libs <- biblioteca_ejemplo(plantilla)
 
 test_that("la base precalculada iguala las columnas Base del fixture del colega", {
   b <- leer_base_scenario()

@@ -218,16 +218,17 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="flujo-de-uso" class="level2">
 <h2 class="anchored" data-anchor-id="flujo-de-uso">Flujo de uso</h2>
-<p>La app tiene cuatro pestañas que se recorren en orden.</p>
-<p><strong>1. Esquemas tarifarios.</strong> Se define cómo se subsidia el consumo: los tramos de consumo (límite en kWh por mes, común a las tres distribuidoras) y, para cada distribuidora, la tarifa plena, la tarifa objetivo y el cargo fijo de cada tramo, junto con la tarifa tope y la tarifa plena general. Se parte de la tarifa vigente o de un esquema guardado, se modifican los valores y se guarda con un nombre.</p>
+<p>La app abre en la pestaña «Instructivo», que resume el uso y cómo se arma un escenario. Después siguen cuatro pestañas que se recorren en orden.</p>
+<p><strong>1. Esquemas tarifarios.</strong> Se define cómo se subsidia el consumo: los tramos de consumo (límite en kWh por mes, común a las tres distribuidoras) y, para cada distribuidora, la tarifa plena, la tarifa objetivo y el cargo fijo de cada tramo, junto con la tarifa tope. Se parte de la tarifa vigente o de un esquema guardado, se modifican los valores y se guarda con un nombre. Una sesión nueva empieza sin esquemas ni compensaciones guardados.</p>
+<p>El subsidio por kWh de cada tramo es la tarifa plena (o la tarifa tope, si es menor) menos la tarifa objetivo. Si la tarifa objetivo queda vacía, o es igual o mayor que la tarifa plena, el tramo no recibe subsidio. Una tarifa objetivo de 0 no es lo mismo que vacía: da al tramo el subsidio máximo.</p>
 <p><strong>2. Compensaciones.</strong> Se define a quién se compensa y con qué monto mensual por hogar. Hay tres grupos de beneficiarios, además de la opción «Sin compensación»:</p>
 <ul>
 <li>hogares hasta cierto decil de ingreso, con monto fijo;</li>
 <li>beneficiarios del bono social, con monto fijo o como porcentaje de la mediana anual del bono;</li>
 <li>hogares con bajo consumo de electricidad (menos de cierto número de kWh por mes), con monto fijo.</li>
 </ul>
-<p><strong>3. Escenarios.</strong> Un escenario combina un esquema tarifario y una compensación de las guardadas. La opción «Tarifa vigente (situación actual)» o «Sin compensación» deja esa parte sin cambio; un escenario debe modificar al menos una de las dos. Se pueden crear los escenarios que se quiera y marcar hasta <strong>4</strong> para comparar. La situación base se incluye siempre.</p>
-<p><strong>4. Simular.</strong> El botón «Simular» corre los escenarios marcados. Los resultados se organizan en siete vistas:</p>
+<p><strong>3. Escenarios.</strong> Un escenario combina un esquema tarifario y una compensación de las guardadas. La opción «Tarifa vigente (situación actual)» o «Sin compensación» deja esa parte sin cambio; un escenario debe modificar al menos una de las dos. Se pueden crear los escenarios que se quiera y marcar «Comparar» en hasta <strong>4</strong>. La situación base se incluye siempre. La papelera de cada fila elimina ese escenario.</p>
+<p><strong>4. Simular.</strong> El botón «Simular» corre los escenarios marcados. Los resultados se organizan en seis vistas:</p>
 <table class="caption-top table">
 <colgroup>
 <col style="width: 50%">
@@ -254,17 +255,13 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </tr>
 <tr class="even">
 <td>Costo fiscal</td>
-<td>Costo anual en millones de Q y como porcentaje del PIB</td>
+<td>Costo anual en millones de Q (quetzales de 2023, población de la ENCOVI 2023) y como porcentaje del PIB</td>
 </tr>
 <tr class="odd">
 <td>Incidencia</td>
 <td>Efecto por deciles, estrato, área, sexo del jefe de hogar, categoría de hogar y regiones (con mapa regional)</td>
 </tr>
 <tr class="even">
-<td>Estratos</td>
-<td>Distribución de la población por estrato de ingreso</td>
-</tr>
-<tr class="odd">
 <td>Tarifas</td>
 <td>Tarifas resultantes de cada escenario</td>
 </tr>

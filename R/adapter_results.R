@@ -205,7 +205,9 @@ ejecutar_escenarios <- function(escenarios, libs, plantilla = tablas_escenario_p
     if (!is.null(cache) && !is.null(cache[[clave]])) {
       corridas[[i]] <- cache[[clave]]
     } else {
-      corridas[[i]] <- list(resumen = run_scenario(tablas)$resumen)
+      corridas[[i]] <- tryCatch(
+        list(resumen = run_scenario(tablas)$resumen),
+        error = \(e) stop(sprintf("Escenario «%s»: %s", nombres[i], conditionMessage(e)), call. = FALSE))
       if (!is.null(cache)) cache[[clave]] <- corridas[[i]]
     }
   }

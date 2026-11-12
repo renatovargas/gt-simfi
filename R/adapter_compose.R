@@ -75,9 +75,13 @@ normalizar_comp <- function(p) {
   p[COMP_CAMPOS]
 }
 
-#' Biblioteca inicial: esquemas 1-2 y compensaciones 1-3 de la plantilla.
-#' El esquema 0 es "situación actual" y no se guarda como componente.
-biblioteca_inicial <- function(plantilla = tablas_escenario_plantilla()) {
+#' Biblioteca inicial de una sesión nueva: vacía. El esquema 0 es la
+#' "situación actual" y no se guarda como componente.
+biblioteca_inicial <- function() list(sub = list(), comp = list())
+
+#' Biblioteca de ejemplo (esquemas 1-2 y compensaciones 1-3 de la plantilla).
+#' Solo para pruebas; la app arranca con la biblioteca vacía.
+biblioteca_ejemplo <- function(plantilla = tablas_escenario_plantilla()) {
   ss <- plantilla$sim_sub
   se <- plantilla$sim_extra
   fila_sub <- \(id) ss[ss$sim_sub == id, , drop = FALSE]
@@ -97,6 +101,30 @@ biblioteca_inicial <- function(plantilla = tablas_escenario_plantilla()) {
 
 # --- Validación y composición ---------------------------------------------------
 
+#' Valida los valores de un esquema tarifario. Devuelve mensajes (vacío si está bien).
+validar_esquema <- function(p) {
+  err <- character()
+  val <- \(c) suppressWarnings(as.numeric(p[[c]] %||% NA_real_))
+  lim <- vapply(SUB_CAMPOS_LIMITE, val, numeric(1))
+  n <- if (anyNA(lim)) which(is.na(lim))[1] - 1L else length(lim)
+  if (n < 1 || lim[1] != 0 || any(!is.na(lim[-seq_len(n)])) || is.unsorted(lim[seq_len(n)], strictly = TRUE)) {
+    err <- c(err, "Los tramos deben empezar en 0 kWh y crecer en orden, sin dejar huecos.")
+    n <- sum(!is.na(lim))
+  }
+  for (emp in names(SUB_DISTRIBUIDORAS)) {
+    cam <- sub_campos_dist(emp)
+    nom <- SUB_DISTRIBUIDORAS[[emp]]
+    if (is.na(val(cam$tope))) err <- c(err, sprintf("Falta la tarifa tope de %s.", nom))
+    sin_plena <- which(is.na(vapply(cam$plena[seq_len(n)], val, numeric(1))))
+    if (length(sin_plena)) {
+      err <- c(err, sprintf("Falta la tarifa plena de %s en el tramo %s.", nom, paste(sin_plena, collapse = ", ")))
+    }
+    neg <- vapply(c(cam$plena, cam$objetivo, cam$cargo, cam$tope), \(c) isTRUE(val(c) < 0), logical(1))
+    if (any(neg)) err <- c(err, sprintf("Hay valores negativos en %s.", nom))
+  }
+  err
+}
+
 #' Valida una lista de escenarios (cada uno `list(name, sub, comp)`).
 #' Devuelve un vector de mensajes de error (vacío si todo está bien).
 validar_escenarios <- function(escenarios, libs) {
@@ -107,6 +135,10 @@ validar_escenarios <- function(escenarios, libs) {
   for (e in escenarios) {
     s <- normalizar_ref(e$sub); k <- normalizar_ref(e$comp)
     if (nzchar(s) && is.null(libs$sub[[s]]))  err <- c(err, sprintf("No existe el esquema tarifario «%s».", s))
+    if (nzchar(s) && !is.null(libs$sub[[s]])) {
+      e_sub <- validar_esquema(libs$sub[[s]])
+      if (length(e_sub)) err <- c(err, sprintf("El esquema «%s» está incompleto: %s", s, paste(e_sub, collapse = " ")))
+    }
     if (nzchar(k) && is.null(libs$comp[[k]])) err <- c(err, sprintf("No existe la compensación «%s».", k))
   }
   unique(err)

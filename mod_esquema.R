@@ -19,9 +19,14 @@ esq_panel_dist <- function(ns, emp, nombre) {
   nav_panel(
     nombre,
     p(class = "text-muted small mt-2 mb-1",
-      "El subsidio por kWh de cada tramo es la tarifa plena (limitada por el tope) menos la ",
-      "tarifa objetivo. Con la tarifa objetivo vacía, el tramo no recibe subsidio. ",
-      "Los límites de consumo son los mismos para las tres distribuidoras."),
+      "Subsidio por kWh de cada tramo = tarifa plena (o la tarifa tope, si es menor) \u2212 tarifa objetivo. ",
+      "El hogar paga por kWh la tarifa plena menos ese subsidio."),
+    tags$ul(class = "text-muted small mb-2",
+      tags$li("Si la tarifa objetivo queda vacía, o es igual o mayor que la tarifa plena, el tramo no ",
+              "recibe subsidio y paga la tarifa plena."),
+      tags$li("Vacío no es lo mismo que cero: una tarifa objetivo de 0 da al tramo el subsidio máximo ",
+              "(la tarifa plena, o la tarifa tope si es menor)."),
+      tags$li("Los límites de consumo son los mismos para las tres distribuidoras.")),
     div(class = "table-responsive",
       tags$table(class = "table table-sm align-middle tabla-esquema mb-2",
         tags$thead(tags$tr(
@@ -31,10 +36,10 @@ esq_panel_dist <- function(ns, emp, nombre) {
           tags$th("Cargo fijo (Q/mes)"))),
         tags$tbody(filas))),
     layout_columns(
-      col_widths = c(3, 3, 6),
+      col_widths = c(3, 9),
       numericInput(ns(cam$tope), "Tarifa tope (Q/kWh)", NA, min = 0, step = 0.0001),
-      numericInput(ns(cam$plena_gral), "Tarifa plena general (Q/kWh)", NA, min = 0, step = 0.0001),
-      div())
+      p(class = "text-muted small pt-4 mb-0",
+        "Límite máximo del subsidio por kWh en todos los tramos de esta distribuidora."))
   )
 }
 
@@ -70,8 +75,14 @@ mod_esquema_server <- function(id, estado, plantilla) {
       e <- emps[match(input$dist %||% SUB_DISTRIBUIDORAS[1], SUB_DISTRIBUIDORAS)]
       if (is.na(e)) emps[1] else e
     })
+    # La tarifa plena general no se edita en pantalla: se conserva la del
+    # esquema cargado (la tarifa vigente por defecto).
+    campos_ocultos <- vapply(names(SUB_DISTRIBUIDORAS), \(e) sub_campos_dist(e)$plena_gral, "")
+    ocultos <- reactiveVal(base[campos_ocultos])
+
     actual <- reactive({
       v <- setNames(lapply(SUB_CAMPOS, num), SUB_CAMPOS)
+      v[campos_ocultos] <- ocultos()
       for (k in seq_len(SUB_N_TRAMOS)) v[[SUB_CAMPOS_LIMITE[k]]] <- num(esq_id_limite(k, emp_visible()))
       v
     })
@@ -102,7 +113,8 @@ mod_esquema_server <- function(id, estado, plantilla) {
     })
 
     cargar_payload <- function(p) {
-      for (c in SUB_CAMPOS) {
+      ocultos(lapply(setNames(campos_ocultos, campos_ocultos), \(c) p[[c]] %||% base[[c]]))
+      for (c in setdiff(SUB_CAMPOS, campos_ocultos)) {
         v <- p[[c]] %||% NA_real_
         ids <- if (c %in% SUB_CAMPOS_LIMITE) esq_id_limite(match(c, SUB_CAMPOS_LIMITE), emps) else c
         for (id in ids) updateNumericInput(session, id, value = if (is.na(v)) "" else v)
@@ -132,11 +144,8 @@ mod_esquema_server <- function(id, estado, plantilla) {
     observeEvent(input$guardar, {
       nm <- nombre(); p <- actual()
       if (!nzchar(nm)) return(showNotification("Escriba un nombre para el esquema.", type = "warning"))
-      lim <- unlist(p[SUB_CAMPOS_LIMITE]); lim <- lim[!is.na(lim)]
-      if (!length(lim) || lim[1] != 0 || is.unsorted(lim, strictly = TRUE)) {
-        return(showNotification(
-          "Los tramos deben empezar en 0 kWh y crecer en orden, sin dejar huecos.", type = "warning"))
-      }
+      err <- validar_esquema(p)
+      if (length(err)) return(showNotification(paste(err, collapse = " "), type = "warning", duration = 8))
       if (!is.null(estado$libs$sub[[nm]])) {
         pendiente(p)
         return(confirmar_reemplazo(session$ns, nm, "un esquema llamado"))

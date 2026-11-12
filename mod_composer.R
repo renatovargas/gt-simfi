@@ -23,22 +23,16 @@ mod_composer_ui <- function(id) {
       card_header(div(class = "d-flex justify-content-between align-items-center",
                       "Escenarios guardados", uiOutput(ns("contador"), inline = TRUE))),
       p(class = "text-muted small",
-        sprintf("Marque hasta %d escenarios para comparar en la simulación. La situación base se incluye siempre.",
-                MAX_ESCENARIOS)),
-      uiOutput(ns("lista")),
-      checkboxGroupInput(ns("comparar"), "Escenarios a comparar", choices = character()),
-      layout_columns(
-        col_widths = c(8, 4),
-        selectizeInput(ns("a_eliminar"), "Eliminar escenario", choices = character(), width = "100%",
-                       options = list(dropdownParent = "body")),
-        div(class = "pt-4", actionButton(ns("eliminar"), tagList(icon("trash"), " Eliminar"),
-                                          class = "btn-outline-danger")))
+        sprintf(paste("Marque «Comparar» en hasta %d escenarios para la simulación. La situación base se",
+                      "incluye siempre. Use la papelera para eliminar un escenario."), MAX_ESCENARIOS)),
+      uiOutput(ns("lista"))
     )
   )
 }
 
 mod_composer_server <- function(id, estado) {
   moduleServer(id, function(input, output, session) {
+    ns <- session$ns
     nombres <- reactive(vapply(estado$escenarios, `[[`, "", "name"))
 
     observe({
@@ -51,14 +45,6 @@ mod_composer_server <- function(id, estado) {
         choices = c("Sin compensación" = REF_SENTINELA, setNames(nm_k, nm_k)))
     })
 
-    # Mantiene la casilla de comparación y el selector de borrado alineados con el estado
-    observe({
-      nm <- nombres()
-      marcados <- nm[vapply(estado$escenarios, \(e) isTRUE(e$comparar), logical(1))]
-      updateCheckboxGroupInput(session, "comparar", choices = nm, selected = marcados)
-      updateSelectInput(session, "a_eliminar", choices = nm)
-    })
-
     output$contador <- renderUI({
       n <- sum(vapply(estado$escenarios, \(e) isTRUE(e$comparar), logical(1)))
       tags$span(class = "small text-muted", sprintf("%d de %d marcados para comparar", n, MAX_ESCENARIOS))
@@ -68,12 +54,26 @@ mod_composer_server <- function(id, estado) {
       if (!length(estado$escenarios)) {
         return(p(class = "text-muted fst-italic", "Aún no hay escenarios."))
       }
-      filas <- lapply(estado$escenarios, \(e) tags$tr(
-        tags$td(e$name),
-        tags$td(if (nzchar(normalizar_ref(e$sub))) e$sub else "Situación actual"),
-        tags$td(if (nzchar(normalizar_ref(e$comp))) e$comp else "Sin compensación")))
-      tags$table(class = "table table-sm",
-        tags$thead(tags$tr(tags$th("Escenario"), tags$th("Esquema tarifario"), tags$th("Compensación"))),
+      # Cada fila envía su evento con el nombre del escenario (JSON, para admitir comillas)
+      evento <- \(id, valor) sprintf("Shiny.setInputValue('%s', %s, {priority: 'event'})", ns(id), valor)
+      filas <- lapply(estado$escenarios, \(e) {
+        nm_js <- jsonlite::toJSON(e$name, auto_unbox = TRUE)
+        tags$tr(
+          tags$td(class = "text-center",
+            tags$input(type = "checkbox", class = "form-check-input", title = "Comparar",
+                       checked = if (isTRUE(e$comparar)) NA,
+                       onclick = evento("marcar", sprintf("{nombre: %s, valor: this.checked}", nm_js)))),
+          tags$td(e$name),
+          tags$td(if (nzchar(normalizar_ref(e$sub))) e$sub else "Situación actual"),
+          tags$td(if (nzchar(normalizar_ref(e$comp))) e$comp else "Sin compensación"),
+          tags$td(class = "text-end",
+            tags$button(type = "button", class = "btn btn-sm btn-outline-danger", title = "Eliminar escenario",
+                        onclick = evento("borrar", nm_js), icon("trash"))))
+      })
+      tags$table(class = "table table-sm align-middle",
+        tags$thead(tags$tr(tags$th(class = "text-center", style = "width:6rem;", "Comparar"),
+                           tags$th("Escenario"), tags$th("Esquema tarifario"), tags$th("Compensación"),
+                           tags$th(""))),
         tags$tbody(filas))
     })
 
@@ -94,25 +94,27 @@ mod_composer_server <- function(id, estado) {
       updateSelectInput(session, "comp", selected = REF_SENTINELA)
     })
 
-    observeEvent(input$comparar, ignoreNULL = FALSE, {
-      sel <- input$comparar %||% character()
-      if (length(sel) > MAX_ESCENARIOS) {
+    observeEvent(input$marcar, {
+      i <- match(input$marcar$nombre %||% "", nombres())
+      if (is.na(i)) return()
+      valor <- isTRUE(input$marcar$valor)
+      n_marcados <- sum(vapply(estado$escenarios, \(e) isTRUE(e$comparar), logical(1)))
+      if (valor && !isTRUE(estado$escenarios[[i]]$comparar) && n_marcados >= MAX_ESCENARIOS) {
         showNotification(sprintf("Se pueden comparar como máximo %d escenarios.", MAX_ESCENARIOS), type = "warning")
-        sel <- head(sel, MAX_ESCENARIOS)
-        updateCheckboxGroupInput(session, "comparar", selected = sel)
+        # Se vuelve a dibujar la lista para desmarcar la casilla
+        estado$escenarios[[i]]$comparar <- TRUE
+        estado$escenarios[[i]]$comparar <- FALSE
+        return()
       }
-      actual <- vapply(estado$escenarios, \(e) isTRUE(e$comparar), logical(1))
-      nuevo <- nombres() %in% sel
-      if (length(nuevo) && !identical(unname(actual), nuevo)) {
-        for (i in seq_along(estado$escenarios)) estado$escenarios[[i]]$comparar <- nuevo[i]
-      }
+      estado$escenarios[[i]]$comparar <- valor
     })
 
-    observeEvent(input$eliminar, {
-      nm <- input$a_eliminar %||% ""
-      i <- match(nm, nombres())
+    observeEvent(input$borrar, {
+      i <- match(input$borrar, nombres())
       if (is.na(i)) return()
+      nm <- estado$escenarios[[i]]$name
       estado$escenarios[[i]] <- NULL
+      showNotification(sprintf("Escenario «%s» eliminado.", nm), type = "message")
     })
   })
 }
