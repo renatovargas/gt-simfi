@@ -98,3 +98,38 @@ test_that("la app no muestra la tarifa plena general ni la pestaña de estratos"
   expect_false(grepl("tplena|Tarifa plena general", html))
   expect_false(any(grepl("\"Estratos\"", readLines(file.path(raiz, "mod_resultados.R"), encoding = "UTF-8"))))
 })
+
+test_that("«Actualizar» guarda los cambios en el esquema cargado sin escribir el nombre", {
+  source(file.path(raiz, "mod_esquema.R"), encoding = "UTF-8")
+  estado <- reactiveValues(libs = libs, escenarios = list())
+  nm0 <- names(libs$sub)[1]
+  testServer(mod_esquema_server, args = list(estado = estado, plantilla = plantilla), {
+    p0 <- libs$sub[[nm0]]
+    campos <- setdiff(SUB_CAMPOS, c(SUB_CAMPOS_LIMITE, paste0("tplena", names(SUB_DISTRIBUIDORAS))))
+    do.call(session$setInputs, p0[campos])
+    do.call(session$setInputs, setNames(p0[SUB_CAMPOS_LIMITE], esq_id_limite(seq_along(SUB_CAMPOS_LIMITE), "eeg")))
+    session$setInputs(cargar = nm0, nombre = "")
+    expect_match(as.character(output$insignia$html), "guardado")
+    session$setInputs(toeeg1 = 0.123)
+    expect_match(as.character(output$insignia$html), "cambios sin guardar")
+    session$setInputs(actualizar = 1)
+    expect_equal(estado$libs$sub[[nm0]]$toeeg1, 0.123)
+    expect_equal(estado$libs$sub[[nm0]]$tplenaeeg, p0$tplenaeeg)
+    expect_length(estado$libs$sub, length(libs$sub))
+    # Con la tarifa vigente cargada no hay nada que actualizar
+    session$setInputs(cargar = REF_SENTINELA, actualizar = 2)
+    expect_equal(names(estado$libs$sub), names(libs$sub))
+  })
+})
+
+test_that("«Actualizar» guarda los cambios en la compensación cargada", {
+  source(file.path(raiz, "mod_compensacion.R"), encoding = "UTF-8")
+  estado <- reactiveValues(libs = libs, escenarios = list())
+  nm <- names(libs$comp)[1]   # grupo 1: monto fijo hasta un decil
+  testServer(mod_compensacion_server, args = list(estado = estado, plantilla = plantilla), {
+    session$setInputs(cargar = nm, grupo_com = "1", decil_com = "3", valor_com_1 = 250)
+    session$setInputs(actualizar = 1)
+    expect_equal(estado$libs$comp[[nm]]$decil_com, 3)
+    expect_equal(estado$libs$comp[[nm]]$valor_com, 250)
+  })
+})
