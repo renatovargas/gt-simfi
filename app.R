@@ -19,7 +19,8 @@ PLANTILLA <- tablas_escenario_plantilla()
 
 ui <- page_navbar(
   id = "nav",
-  title = tags$span(style = "font-weight:600;", "Microsimulación del subsidio eléctrico · Guatemala"),
+  title = tags$span(style = "font-weight:600;", "SIMFI - GT"),
+  window_title = "SIMFI - GT",
   theme = bs_theme(version = 5, bootswatch = "zephyr", primary = "#005A9C", "navbar-bg" = "#0d2137"),
   fillable = FALSE,
   nav_panel("Instructivo", icon = icon("book-open"), instructivo_ui()),
