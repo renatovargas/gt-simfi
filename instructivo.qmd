@@ -14,13 +14,15 @@ Con la carpeta del proyecto abierta y los paquetes instalados (ver la [página p
 shiny::runApp()
 ```
 
+La app abre en la pestaña «Instructivo», con un resumen de las pantallas y de cómo se arma un escenario. El botón «Comenzar» lleva a la primera pantalla.
+
 ## 2. Definir un esquema tarifario
 
 1. Abra la pestaña «1 · Esquemas tarifarios». Los campos muestran la tarifa vigente.
 2. Modifique los valores que quiera cambiar, por ejemplo la tarifa objetivo de un tramo en una distribuidora.
 3. Escriba un nombre en «Nombre del esquema» y guarde. La insignia pasa de «sin guardar» a «guardado».
 
-Con la tarifa objetivo vacía, el tramo no recibe subsidio.
+El subsidio por kWh de cada tramo es la tarifa plena (o la tarifa tope, si es menor) menos la tarifa objetivo. Si la tarifa objetivo queda vacía, o es igual o mayor que la tarifa plena, el tramo no recibe subsidio y paga la tarifa plena. Una tarifa objetivo de 0 no es lo mismo que vacía: da al tramo el subsidio máximo.
 
 ## 3. Definir una compensación
 
@@ -33,6 +35,7 @@ Con la tarifa objetivo vacía, el tramo no recibe subsidio.
 1. Abra la pestaña «3 · Escenarios».
 2. Escriba el nombre del escenario y elija el esquema y la compensación guardados.
 3. Presione «Agregar escenario a la lista». Se marca para comparar automáticamente mientras haya menos de cuatro marcados.
+4. En «Escenarios guardados», la casilla «Comparar» de cada fila elige los escenarios que se simulan (hasta cuatro) y la papelera elimina el escenario.
 
 ## 5. Simular y leer los resultados
 

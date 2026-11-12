@@ -50,8 +50,10 @@ mod_simulacion_server <- function(id, estado, plantilla) {
       if (!length(sel)) {
         return(showNotification("Marque al menos un escenario en la pestaña «Escenarios».", type = "warning"))
       }
+      faltan <- paquetes_faltantes()
+      if (length(faltan)) return(showModal(aviso_paquetes(faltan)))
       err <- validar_escenarios(sel, estado$libs)
-      if (length(err)) return(showNotification(paste(err, collapse = " "), type = "error"))
+      if (length(err)) return(showNotification(paste(err, collapse = " "), type = "error", duration = 15))
 
       # Evita que se vean resultados viejos durante y después de una corrida fallida
       estado$resultados <- NULL
@@ -62,11 +64,15 @@ mod_simulacion_server <- function(id, estado, plantilla) {
         tryCatch(
           ejecutar_escenarios(sel, estado$libs, plantilla, cache = cache,
             progreso = \(i, n, nombre) setProgress((i - 1) / n, detail = sprintf("%s (%d de %d)", nombre, i, n))),
-          error = \(e) { message("Error de simulación: ", conditionMessage(e)); NULL })
+          error = \(e) { message("Error de simulación: ", conditionMessage(e)); e })
       })
-      if (is.null(res)) {
-        showNotification("No se pudo completar la simulación. Revise los valores del esquema y la compensación.",
-                         type = "error", duration = 10)
+      if (inherits(res, "error")) {
+        showModal(modalDialog(
+          title = "No se pudo completar la simulación",
+          p("Revise los valores del esquema tarifario y de la compensación del escenario indicado."),
+          tags$p(class = "small text-muted mb-1", "Detalle:"),
+          tags$pre(class = "small", style = "white-space: pre-wrap;", conditionMessage(res)),
+          easyClose = TRUE, footer = modalButton("Cerrar")))
       } else {
         estado$resultados <- res
         estado$firma <- firma

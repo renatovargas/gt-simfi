@@ -198,6 +198,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <h2 class="anchored" data-anchor-id="iniciar-la-app">1. Iniciar la app</h2>
 <p>Con la carpeta del proyecto abierta y los paquetes instalados (ver la <a href="./index.html">página principal</a>), ejecute en la consola de R:</p>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>shiny<span class="sc">::</span><span class="fu">runApp</span>()</span></code></pre></div><button title="Copiar al portapapeles" class="code-copy-button"><i class="bi"></i></button></div>
+<p>La app abre en la pestaña «Instructivo», con un resumen de las pantallas y de cómo se arma un escenario. El botón «Comenzar» lleva a la primera pantalla.</p>
 </section>
 <section id="definir-un-esquema-tarifario" class="level2">
 <h2 class="anchored" data-anchor-id="definir-un-esquema-tarifario">2. Definir un esquema tarifario</h2>
@@ -206,7 +207,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <li>Modifique los valores que quiera cambiar, por ejemplo la tarifa objetivo de un tramo en una distribuidora.</li>
 <li>Escriba un nombre en «Nombre del esquema» y guarde. La insignia pasa de «sin guardar» a «guardado».</li>
 </ol>
-<p>Con la tarifa objetivo vacía, el tramo no recibe subsidio.</p>
+<p>El subsidio por kWh de cada tramo es la tarifa plena (o la tarifa tope, si es menor) menos la tarifa objetivo. Si la tarifa objetivo queda vacía, o es igual o mayor que la tarifa plena, el tramo no recibe subsidio y paga la tarifa plena. Una tarifa objetivo de 0 no es lo mismo que vacía: da al tramo el subsidio máximo.</p>
 </section>
 <section id="definir-una-compensación" class="level2">
 <h2 class="anchored" data-anchor-id="definir-una-compensación">3. Definir una compensación</h2>
@@ -222,6 +223,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <li>Abra la pestaña «3 · Escenarios».</li>
 <li>Escriba el nombre del escenario y elija el esquema y la compensación guardados.</li>
 <li>Presione «Agregar escenario a la lista». Se marca para comparar automáticamente mientras haya menos de cuatro marcados.</li>
+<li>En «Escenarios guardados», la casilla «Comparar» de cada fila elige los escenarios que se simulan (hasta cuatro) y la papelera elimina el escenario.</li>
 </ol>
 </section>
 <section id="simular-y-leer-los-resultados" class="level2">

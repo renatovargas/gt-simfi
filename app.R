@@ -7,7 +7,7 @@ library(bslib)
 # Capas: configuración -> adaptador (motor de referencia) -> lógica de la app
 for (f in c("config.R", "adapter_names.R", "adapter_params.R", "adapter_env.R", "adapter_engine.R",
             "adapter_compose.R", "base_scenario.R", "adapter_results.R", "scenario_store.R",
-            "results_views.R", "map_views.R", "ui_helpers.R")) {
+            "results_views.R", "map_views.R", "ui_helpers.R", "instructivo.R")) {
   source(file.path("R", f), encoding = "UTF-8", local = FALSE)
 }
 for (f in c("mod_esquema.R", "mod_compensacion.R", "mod_composer.R", "mod_sesion.R",
@@ -22,6 +22,7 @@ ui <- page_navbar(
   title = tags$span(style = "font-weight:600;", "Microsimulación del subsidio eléctrico · Guatemala"),
   theme = bs_theme(version = 5, bootswatch = "zephyr", primary = "#005A9C", "navbar-bg" = "#0d2137"),
   fillable = FALSE,
+  nav_panel("Instructivo", icon = icon("book-open"), instructivo_ui()),
   nav_panel("1 · Esquemas tarifarios", icon = icon("bolt"),
             div(class = "container-fluid py-2", mod_esquema_ui("esq"))),
   nav_panel("2 · Compensaciones", icon = icon("hand-holding-dollar"),
@@ -36,11 +37,15 @@ server <- function(input, output, session) {
   raiz <- "."
   guardado <- autosave_leer(raiz)
   estado <- reactiveValues(
-    libs        = guardado$libs %||% biblioteca_inicial(PLANTILLA),
+    libs        = guardado$libs %||% biblioteca_inicial(),
     escenarios  = guardado$escenarios %||% list(),
     resultados  = NULL,
     firma       = NULL
   )
+
+  faltan <- paquetes_faltantes()
+  if (length(faltan)) showModal(aviso_paquetes(faltan))
+  observeEvent(input$comenzar, nav_select("nav", "1 · Esquemas tarifarios"))
 
   mod_esquema_server("esq", estado, PLANTILLA)
   mod_compensacion_server("comp", estado, PLANTILLA)

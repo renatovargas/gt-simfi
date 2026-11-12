@@ -58,3 +58,15 @@ confirmar_reemplazo <- function(ns, nombre, tipo) {
                      actionButton(ns("confirmar_reemplazo"), "Reemplazar", class = "btn-primary")),
     easyClose = TRUE))
 }
+
+#' Aviso de paquetes faltantes con la instrucción para instalarlos.
+aviso_paquetes <- function(faltan) {
+  cmd <- sprintf("install.packages(c(%s))", paste0('"', faltan, '"', collapse = ", "))
+  modalDialog(
+    title = "Faltan paquetes de R",
+    p("La simulación no puede correr porque estos paquetes no están instalados:"),
+    tags$p(tags$strong(paste(faltan, collapse = ", "))),
+    p("Cierre la app, ejecute en la consola de R la instrucción siguiente y vuelva a abrirla:"),
+    tags$pre(cmd),
+    easyClose = TRUE, footer = modalButton("Entendido"))
+}

@@ -37,9 +37,11 @@ Si la app no arranca, detenga el servidor, verifique que la carpeta abierta es l
 
 ## Flujo de uso
 
-La app tiene cuatro pestañas que se recorren en orden.
+La app abre en la pestaña «Instructivo», que resume el uso y cómo se arma un escenario. Después siguen cuatro pestañas que se recorren en orden.
 
-**1. Esquemas tarifarios.** Se define cómo se subsidia el consumo: los tramos de consumo (límite en kWh por mes, común a las tres distribuidoras) y, para cada distribuidora, la tarifa plena, la tarifa objetivo y el cargo fijo de cada tramo, junto con la tarifa tope y la tarifa plena general. Se parte de la tarifa vigente o de un esquema guardado, se modifican los valores y se guarda con un nombre.
+**1. Esquemas tarifarios.** Se define cómo se subsidia el consumo: los tramos de consumo (límite en kWh por mes, común a las tres distribuidoras) y, para cada distribuidora, la tarifa plena, la tarifa objetivo y el cargo fijo de cada tramo, junto con la tarifa tope. Se parte de la tarifa vigente o de un esquema guardado, se modifican los valores y se guarda con un nombre. Una sesión nueva empieza sin esquemas ni compensaciones guardados.
+
+El subsidio por kWh de cada tramo es la tarifa plena (o la tarifa tope, si es menor) menos la tarifa objetivo. Si la tarifa objetivo queda vacía, o es igual o mayor que la tarifa plena, el tramo no recibe subsidio. Una tarifa objetivo de 0 no es lo mismo que vacía: da al tramo el subsidio máximo.
 
 **2. Compensaciones.** Se define a quién se compensa y con qué monto mensual por hogar. Hay tres grupos de beneficiarios, además de la opción «Sin compensación»:
 
@@ -47,18 +49,17 @@ La app tiene cuatro pestañas que se recorren en orden.
 - beneficiarios del bono social, con monto fijo o como porcentaje de la mediana anual del bono;
 - hogares con bajo consumo de electricidad (menos de cierto número de kWh por mes), con monto fijo.
 
-**3. Escenarios.** Un escenario combina un esquema tarifario y una compensación de las guardadas. La opción «Tarifa vigente (situación actual)» o «Sin compensación» deja esa parte sin cambio; un escenario debe modificar al menos una de las dos. Se pueden crear los escenarios que se quiera y marcar hasta **4** para comparar. La situación base se incluye siempre.
+**3. Escenarios.** Un escenario combina un esquema tarifario y una compensación de las guardadas. La opción «Tarifa vigente (situación actual)» o «Sin compensación» deja esa parte sin cambio; un escenario debe modificar al menos una de las dos. Se pueden crear los escenarios que se quiera y marcar «Comparar» en hasta **4**. La situación base se incluye siempre. La papelera de cada fila elimina ese escenario.
 
-**4. Simular.** El botón «Simular» corre los escenarios marcados. Los resultados se organizan en siete vistas:
+**4. Simular.** El botón «Simular» corre los escenarios marcados. Los resultados se organizan en seis vistas:
 
 | Vista | Contenido |
 |---|---|
 | Resumen | Indicadores principales de cada escenario |
 | Pobreza | Tasa de pobreza (general, extrema o con línea internacional) y brecha de pobreza |
 | Desigualdad | Gini, Palma y medidas de concentración por instrumento |
-| Costo fiscal | Costo anual en millones de Q y como porcentaje del PIB |
+| Costo fiscal | Costo anual en millones de Q (quetzales de 2023, población de la ENCOVI 2023) y como porcentaje del PIB |
 | Incidencia | Efecto por deciles, estrato, área, sexo del jefe de hogar, categoría de hogar y regiones (con mapa regional) |
-| Estratos | Distribución de la población por estrato de ingreso |
 | Tarifas | Tarifas resultantes de cada escenario |
 
 Si cambia la configuración después de simular, la app avisa que los resultados ya no corresponden y hay que volver a simular.

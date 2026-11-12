@@ -3,7 +3,7 @@
 for (f in c("results_views.R", "map_views.R")) source(file.path(raiz, "R", f), encoding = "UTF-8")
 source(file.path(raiz, "R", "adapter_compose.R"), encoding = "UTF-8")
 plantilla <- tablas_escenario_plantilla()
-libs <- biblioteca_inicial(plantilla)
+libs <- biblioteca_ejemplo(plantilla)
 e <- list(list(name = "Reforma larga con un nombre muy extenso <b>", sub = names(libs$sub)[2],
                comp = names(libs$comp)[1]),
           list(name = "Solo tarifa", sub = names(libs$sub)[1], comp = REF_SENTINELA))
