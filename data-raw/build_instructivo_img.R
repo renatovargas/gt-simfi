@@ -70,3 +70,36 @@ p_escenario <- ggplot() +
   theme_void(base_size = 15) +
   theme(legend.position = "bottom")
 guardar(p_escenario, "escenario.png", 9, 5.2)
+
+# --- Composición de la tarifa plena (ejemplo: EEGSA, tramo de 0 a 60 kWh, tarifa vigente) ---
+
+plena <- 1.419026; tope <- 1.099029; objetivo <- 0.5
+partes <- data.frame(
+  parte = factor(c("Tarifa objetivo (paga el usuario)", "Aporte social INDE (tope − objetivo)",
+                   "Brecha plena − tope (paga el usuario)"),
+                 levels = rev(c("Tarifa objetivo (paga el usuario)", "Aporte social INDE (tope − objetivo)",
+                                "Brecha plena − tope (paga el usuario)"))),
+  valor = c(objetivo, tope - objetivo, plena - tope)
+)
+partes$fin <- cumsum(partes$valor); partes$ini <- partes$fin - partes$valor
+marcas <- data.frame(x = c(objetivo, tope, plena),
+                     etiqueta = sprintf(c("Objetivo\nQ%.2f", "Tope\nQ%.4f", "Plena\nQ%.4f"), c(objetivo, tope, plena)))
+
+p_tarifas <- ggplot(partes) +
+  geom_rect(aes(xmin = ini, xmax = fin, ymin = 0, ymax = 1, fill = parte), colour = "white", linewidth = 1) +
+  geom_text(aes(x = (ini + fin) / 2, y = 0.5, label = sprintf("Q%.4f", valor)), size = 5, fontface = "bold") +
+  geom_segment(data = marcas, aes(x = x, xend = x, y = 1.02, yend = 1.18), colour = "grey40") +
+  geom_text(data = marcas, aes(x = x, y = 1.22, label = etiqueta), vjust = 0, size = 4.2, lineheight = 0.9) +
+  scale_fill_manual(values = c("Tarifa objetivo (paga el usuario)" = "#FFF2CC",
+                               "Aporte social INDE (tope − objetivo)" = "#B9DEED",
+                               "Brecha plena − tope (paga el usuario)" = "#D9D9D9"),
+                    breaks = levels(partes$parte)[3:1], name = NULL) +
+  scale_x_continuous(limits = c(-0.02, plena + 0.12), labels = \(x) sprintf("Q%.2f", x),
+                     breaks = seq(0, 1.4, 0.2)) +
+  scale_y_continuous(limits = c(0, 1.55)) +
+  labs(x = "Q por kWh", y = NULL) +
+  theme_minimal(base_size = 15) +
+  theme(legend.position = "bottom", legend.direction = "vertical", panel.grid = element_blank(),
+        axis.text.y = element_blank(), axis.line.x = element_line(colour = "grey60"),
+        axis.ticks.x = element_line(colour = "grey60"))
+guardar(p_tarifas, "tarifas.png", 9, 4.6)

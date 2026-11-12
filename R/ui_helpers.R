@@ -32,21 +32,25 @@ aviso_base <- function(res) {
       "desactualizada. Los resultados son válidos; conviene reconstruir la base para ahorrar tiempo.")
 }
 
-#' Barra de biblioteca de un componente: elegir uno guardado carga sus valores para
-#' modificarlos; el nombre nunca se rellena solo (se escribe al guardar).
+#' Barra de biblioteca de un componente. «Cargar» trae los valores de un componente
+#' guardado (o de la situación actual); «Actualizar» guarda los cambios sobre el
+#' componente cargado y «Guardar como nuevo» crea otro con el nombre que se escriba.
 barra_biblioteca_ui <- function(ns, texto_base, ejemplo, etiqueta_nombre) {
   tagList(
     layout_columns(
-      col_widths = c(9, 3),
-      selectizeInput(ns("cargar"), "Partir de", choices = setNames(REF_SENTINELA, texto_base),
+      col_widths = c(8, 4),
+      selectizeInput(ns("cargar"), "Cargar", choices = setNames(REF_SENTINELA, texto_base), width = "100%",
                      options = list(dropdownParent = "body")),
-      div(class = "pt-4 text-end", actionButton(ns("eliminar"), icon("trash"),
-            class = "btn-outline-danger", title = "Eliminar el componente seleccionado"))),
+      div(class = "pt-4 d-flex gap-2 justify-content-end",
+          actionButton(ns("actualizar"), tagList(icon("rotate"), " Actualizar"), class = "btn-primary",
+                       title = "Guardar los cambios en el componente cargado"),
+          actionButton(ns("eliminar"), icon("trash"), class = "btn-outline-danger",
+                       title = "Eliminar el componente cargado"))),
     layout_columns(
-      col_widths = c(6, 6),
-      textInput(ns("nombre"), etiqueta_nombre, placeholder = ejemplo),
-      div(class = "pt-4", actionButton(ns("guardar"), tagList(icon("floppy-disk"), " Guardar"),
-                                       class = "btn-primary"))))
+      col_widths = c(8, 4),
+      textInput(ns("nombre"), etiqueta_nombre, placeholder = ejemplo, width = "100%"),
+      div(class = "pt-4 text-end", actionButton(ns("guardar"), tagList(icon("floppy-disk"), " Guardar como nuevo"),
+                                                class = "btn-outline-primary"))))
 }
 
 #' Pide confirmación antes de reemplazar un componente guardado con el mismo nombre.

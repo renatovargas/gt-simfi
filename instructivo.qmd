@@ -20,15 +20,16 @@ La app abre en la pestaña «Instructivo», con un resumen de las pantallas y de
 
 1. Abra la pestaña «1 · Esquemas tarifarios». Los campos muestran la tarifa vigente.
 2. Modifique los valores que quiera cambiar, por ejemplo la tarifa objetivo de un tramo en una distribuidora.
-3. Escriba un nombre en «Nombre del esquema» y guarde. La insignia pasa de «sin guardar» a «guardado».
+3. Escriba un nombre en «Nombre del nuevo esquema» y presione «Guardar como nuevo». La insignia pasa de «sin guardar» a «guardado».
+4. Para cambiar después un esquema guardado, elíjalo en «Cargar», modifique los valores y presione «Actualizar». La insignia muestra «cambios sin guardar» mientras haya cambios pendientes.
 
-El subsidio por kWh de cada tramo es la tarifa plena (o la tarifa tope, si es menor) menos la tarifa objetivo. Si la tarifa objetivo queda vacía, o es igual o mayor que la tarifa plena, el tramo no recibe subsidio y paga la tarifa plena. Una tarifa objetivo de 0 no es lo mismo que vacía: da al tramo el subsidio máximo.
+El aporte social por kWh de cada tramo es la tarifa plena (o la tarifa tope, si es menor) menos la tarifa objetivo. Si la tarifa objetivo queda vacía, o es igual o mayor que la tarifa plena, el tramo no recibe aporte social y paga la tarifa plena. Una tarifa objetivo de 0 no es lo mismo que vacía: da al tramo el aporte social máximo.
 
 ## 3. Definir una compensación
 
 1. Abra la pestaña «2 · Compensaciones».
 2. En «¿A quién se compensa?» elija un grupo y complete los campos que aparecen (decil, monto mensual por hogar, porcentaje o consumo máximo).
-3. Escriba un nombre y guarde.
+3. Escriba un nombre y presione «Guardar como nuevo». Para modificar una compensación guardada, cárguela, cambie los valores y presione «Actualizar».
 
 ## 4. Armar el escenario
 
