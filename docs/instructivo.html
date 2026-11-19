@@ -162,7 +162,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
    
   <ul>
   <li><a href="#iniciar-la-app" id="toc-iniciar-la-app" class="nav-link active" data-scroll-target="#iniciar-la-app">1. Iniciar la app</a></li>
-  <li><a href="#definir-un-esquema-tarifario" id="toc-definir-un-esquema-tarifario" class="nav-link" data-scroll-target="#definir-un-esquema-tarifario">2. Definir un esquema tarifario</a></li>
+  <li><a href="#definir-un-esquema-tarifario" id="toc-definir-un-esquema-tarifario" class="nav-link" data-scroll-target="#definir-un-esquema-tarifario">2. Definir un esquema tarifario</a>
+  <ul class="collapse">
+  <li><a href="#cómo-ajustar-el-subsidio" id="toc-cómo-ajustar-el-subsidio" class="nav-link" data-scroll-target="#cómo-ajustar-el-subsidio">Cómo ajustar el subsidio</a></li>
+  </ul></li>
   <li><a href="#definir-una-compensación" id="toc-definir-una-compensación" class="nav-link" data-scroll-target="#definir-una-compensación">3. Definir una compensación</a></li>
   <li><a href="#armar-el-escenario" id="toc-armar-el-escenario" class="nav-link" data-scroll-target="#armar-el-escenario">4. Armar el escenario</a></li>
   <li><a href="#simular-y-leer-los-resultados" id="toc-simular-y-leer-los-resultados" class="nav-link" data-scroll-target="#simular-y-leer-los-resultados">5. Simular y leer los resultados</a></li>
@@ -209,6 +212,17 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <li>Para cambiar después un esquema guardado, elíjalo en «Cargar», modifique los valores y presione «Actualizar». La insignia muestra «cambios sin guardar» mientras haya cambios pendientes.</li>
 </ol>
 <p>El aporte social por kWh de cada tramo es la tarifa plena (o la tarifa tope, si es menor) menos la tarifa objetivo. Si la tarifa objetivo queda vacía, o es igual o mayor que la tarifa plena, el tramo no recibe aporte social y paga la tarifa plena. Una tarifa objetivo de 0 no es lo mismo que vacía: da al tramo el aporte social máximo.</p>
+<section id="cómo-ajustar-el-subsidio" class="level3">
+<h3 class="anchored" data-anchor-id="cómo-ajustar-el-subsidio">Cómo ajustar el subsidio</h3>
+<ul>
+<li><strong>Quién recibe el subsidio:</strong> cambie los límites de consumo. Cada hogar queda en un solo tramo según su consumo mensual, y todos sus kWh se cobran con la tarifa de ese tramo. El límite indica dónde empieza el tramo; por ejemplo, para que el tramo 1 llegue hasta 120 kWh, escriba 120 en el límite del tramo 2.</li>
+<li><strong>Cuánto recibe cada tramo:</strong> baje la tarifa objetivo para dar más aporte social por kWh o súbala para dar menos.</li>
+<li><strong>Quitar el subsidio a un tramo:</strong> deje vacía la tarifa objetivo o iguálela a la tarifa plena.</li>
+<li><strong>Limitar el aporte:</strong> la tarifa tope fija el aporte máximo por kWh en todos los tramos de la distribuidora; si se baja, el aporte se reduce en los tramos donde la tarifa plena la supera.</li>
+<li><strong>Por distribuidora:</strong> las tarifas se fijan por separado en cada pestaña (EEGSA, DEOCSA, DEORSA); los límites de consumo son comunes. El cargo fijo es solo de referencia y no cambia los resultados.</li>
+<li><strong>Con qué se compara:</strong> los resultados se comparan con la tarifa vigente, que incluye el subsidio actual. Si un esquema da menos aporte que el vigente, el cambio en el ingreso de los hogares sale negativo.</li>
+</ul>
+</section>
 </section>
 <section id="definir-una-compensación" class="level2">
 <h2 class="anchored" data-anchor-id="definir-una-compensación">3. Definir una compensación</h2>

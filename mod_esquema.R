@@ -16,6 +16,28 @@ esq_fmt_dif <- function(tope, objetivo) {
   sub("\\.?0+$", "", sprintf("%.6f", tope - objetivo))
 }
 
+#' Viñetas «Cómo ajustar el subsidio» (pantalla de esquemas e Instructivo).
+esq_ayuda_ajuste <- function() {
+  list(
+    tags$li(tags$strong("Quién recibe el subsidio: "),
+            "cambie los límites de consumo. Cada hogar queda en un solo tramo según su consumo mensual, y ",
+            "todos sus kWh se cobran con la tarifa de ese tramo. El límite indica dónde empieza el tramo; ",
+            "por ejemplo, para que el tramo 1 llegue hasta 120 kWh, escriba 120 en el límite del tramo 2."),
+    tags$li(tags$strong("Cuánto recibe cada tramo: "),
+            "baje la tarifa objetivo para dar más aporte social por kWh o súbala para dar menos."),
+    tags$li(tags$strong("Quitar el subsidio a un tramo: "),
+            "deje vacía la tarifa objetivo o iguálela a la tarifa plena."),
+    tags$li(tags$strong("Limitar el aporte: "),
+            "la tarifa tope fija el aporte máximo por kWh en todos los tramos de la distribuidora; ",
+            "si se baja, el aporte se reduce en los tramos donde la tarifa plena la supera."),
+    tags$li(tags$strong("Por distribuidora: "),
+            "las tarifas se fijan por separado en cada pestaña (EEGSA, DEOCSA, DEORSA); los límites de ",
+            "consumo son comunes. El cargo fijo es solo de referencia y no cambia los resultados."),
+    tags$li(tags$strong("Con qué se compara: "),
+            "los resultados se comparan con la tarifa vigente, que incluye el subsidio actual. Si un ",
+            "esquema da menos aporte que el vigente, el cambio en el ingreso de los hogares sale negativo."))
+}
+
 esq_panel_dist <- function(ns, emp, nombre) {
   cam <- sub_campos_dist(emp)
   celda <- \(id, step) tags$td(esq_num(ns, id, step))
@@ -70,6 +92,10 @@ mod_esquema_ui <- function(id) {
       "Defina los tramos de consumo y las tarifas por distribuidora. Cargue la tarifa vigente o un esquema ",
       "guardado y modifique los valores. «Actualizar» guarda los cambios en el esquema cargado; ",
       "«Guardar como nuevo» crea otro esquema con el nombre que escriba."),
+    accordion(
+      id = ns("ayuda"), open = TRUE, class = "mb-3",
+      accordion_panel("Cómo ajustar el subsidio", icon = icon("lightbulb"),
+                      tags$ul(class = "small mb-0", esq_ayuda_ajuste()))),
     barra_biblioteca_ui(ns, "Tarifa vigente (situación actual)",
                         "p. ej. Tarifa social hasta 120 kWh", "Nombre del nuevo esquema"),
     do.call(navset_pill, c(
