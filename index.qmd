@@ -41,7 +41,7 @@ La app abre en la pestaña «Instructivo», que resume el uso y cómo se arma un
 
 **1. Esquemas tarifarios.** Se define cómo se subsidia el consumo: los tramos de consumo (límite en kWh por mes, común a las tres distribuidoras) y, para cada distribuidora, la tarifa plena, la tarifa objetivo y el cargo fijo de cada tramo, junto con la tarifa tope. Con «Cargar» se trae la tarifa vigente o un esquema guardado y se modifican los valores. «Actualizar» guarda los cambios en el esquema cargado y «Guardar como nuevo» crea otro con el nombre que se escriba. Las compensaciones funcionan igual. Una sesión nueva empieza sin esquemas ni compensaciones guardados.
 
-El aporte social por kWh de cada tramo es la tarifa plena (o la tarifa tope, si es menor) menos la tarifa objetivo. Si la tarifa objetivo queda vacía, o es igual o mayor que la tarifa plena, el tramo no recibe aporte social. Una tarifa objetivo de 0 no es lo mismo que vacía: da al tramo el aporte social máximo.
+El aporte social por kWh de cada tramo es la tarifa plena (o la tarifa tope, si es menor) menos la tarifa objetivo. Si la tarifa objetivo queda vacía, o es igual o mayor que la tarifa plena, el tramo no recibe aporte social. Una tarifa objetivo de 0 no es lo mismo que vacía: da al tramo el aporte social máximo. El aporte social lo cubre el INDE; el usuario paga por kWh la tarifa objetivo más la diferencia entre la plena y la tope (cuando la plena la supera). Si la tope baja, el aporte social cae y el usuario paga más.
 
 **2. Compensaciones.** Se define a quién se compensa y con qué monto mensual por hogar. Hay tres grupos de beneficiarios, además de la opción «Sin compensación»:
 
@@ -49,7 +49,7 @@ El aporte social por kWh de cada tramo es la tarifa plena (o la tarifa tope, si 
 - beneficiarios del bono social, con monto fijo o como porcentaje de la mediana anual del bono;
 - hogares con bajo consumo de electricidad (menos de cierto número de kWh por mes), con monto fijo.
 
-**3. Escenarios.** Un escenario combina un esquema tarifario y una compensación de las guardadas. La opción «Tarifa vigente (situación actual)» o «Sin compensación» deja esa parte sin cambio; un escenario debe modificar al menos una de las dos. Se pueden crear los escenarios que se quiera y marcar «Comparar» en hasta **4**. La situación base se incluye siempre. La papelera de cada fila elimina ese escenario.
+**3. Escenarios.** Un escenario combina un esquema tarifario y una compensación de las guardadas. La opción «Tarifa vigente (situación actual)» o «Sin compensación» deja esa parte sin cambio; un escenario debe modificar al menos una de las dos. Se pueden crear los escenarios que se quiera y marcar «Comparar» en hasta **4**. La situación base se incluye siempre. El botón del ojo de cada fila muestra en qué consiste el escenario (los valores que cambian frente a la tarifa vigente y la compensación) y la papelera lo elimina.
 
 **4. Simular.** El botón «Simular» corre los escenarios marcados. Los resultados se organizan en seis vistas:
 
@@ -58,7 +58,7 @@ El aporte social por kWh de cada tramo es la tarifa plena (o la tarifa tope, si 
 | Resumen | Indicadores principales de cada escenario |
 | Pobreza | Tasa de pobreza (general, extrema o con línea internacional) y brecha de pobreza |
 | Desigualdad | Gini, Palma y medidas de concentración por instrumento |
-| Costo fiscal | Costo anual en millones de Q (quetzales de 2023, población de la ENCOVI 2023) y como porcentaje del PIB |
+| Costo fiscal | Costo anual en millones de Q (quetzales de 2023, población de la ENCOVI 2023), cambio frente a la base (ahorro o costo adicional) y costo como porcentaje del PIB |
 | Incidencia | Efecto por deciles, estrato, área, sexo del jefe de hogar, categoría de hogar y regiones (con mapa regional) |
 | Tarifas | Tarifas resultantes de cada escenario |
 

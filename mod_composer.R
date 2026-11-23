@@ -24,16 +24,52 @@ mod_composer_ui <- function(id) {
                       "Escenarios guardados", uiOutput(ns("contador"), inline = TRUE))),
       p(class = "text-muted small",
         sprintf(paste("Marque «Comparar» en hasta %d escenarios para la simulación. La situación base se",
-                      "incluye siempre. Use la papelera para eliminar un escenario."), MAX_ESCENARIOS)),
+                      "incluye siempre. Use el ojo para ver en qué consiste cada escenario y la papelera para eliminarlo."),
+                MAX_ESCENARIOS)),
       uiOutput(ns("lista"))
     )
   )
 }
 
-mod_composer_server <- function(id, estado) {
+#' Detalle de un escenario: cambios del esquema frente a la tarifa vigente y compensación.
+composer_detalle_ui <- function(e, libs, base) {
+  s <- normalizar_ref(e$sub); k <- normalizar_ref(e$comp)
+  bloque_sub <- if (!nzchar(s) || is.null(libs$sub[[s]])) {
+    p(class = "small text-muted mb-2", tags$strong("Esquema tarifario:"), " tarifa vigente (sin cambios).")
+  } else {
+    ch <- cambios_esquema(libs$sub[[s]], base)
+    if (!nrow(ch)) {
+      p(class = "small text-muted mb-2", tags$strong("Esquema tarifario: "), s,
+        " (mismos valores que la tarifa vigente).")
+    } else {
+      tagList(
+        p(class = "small mb-1", tags$strong("Esquema tarifario: "), s,
+          sprintf(" \u2014 %d valor%s distinto%s de la tarifa vigente:", nrow(ch),
+                  if (nrow(ch) == 1) "" else "es", if (nrow(ch) == 1) "" else "s")),
+        div(style = "max-height:340px;overflow:auto;",
+          tags$table(class = "table table-sm small mb-2",
+            tags$thead(tags$tr(lapply(names(ch), tags$th))),
+            tags$tbody(lapply(seq_len(nrow(ch)), \(r) tags$tr(lapply(ch[r, ], \(v) tags$td(v))))))),
+        p(class = "small text-muted mb-2",
+          "El aporte social por kWh es la tarifa plena (o la tope, si es menor) menos la objetivo; ",
+          "lo que paga el hogar por kWh es la tarifa plena menos ese aporte."))
+    }
+  }
+  bloque_comp <- p(class = "small mb-0", tags$strong("Compensación: "),
+                   if (nzchar(k) && !is.null(libs$comp[[k]])) paste0(k, " \u2014 ", describir_comp(libs$comp[[k]]))
+                   else "sin compensación.")
+  tagList(bloque_sub, bloque_comp)
+}
+
+mod_composer_server <- function(id, estado, plantilla = NULL) {
   moduleServer(id, function(input, output, session) {
     ns <- session$ns
     nombres <- reactive(vapply(estado$escenarios, `[[`, "", "name"))
+    base_sub <- local({
+      pl <- plantilla %||% tablas_escenario_plantilla()
+      payload_sub_desde_fila(pl$sim_sub[pl$sim_sub$sim_sub == 0, , drop = FALSE])
+    })
+    abierto <- reactiveVal(NULL)
 
     observe({
       s <- isolate(input$sub) %||% REF_SENTINELA
@@ -58,7 +94,8 @@ mod_composer_server <- function(id, estado) {
       evento <- \(id, valor) sprintf("Shiny.setInputValue('%s', %s, {priority: 'event'})", ns(id), valor)
       filas <- lapply(estado$escenarios, \(e) {
         nm_js <- jsonlite::toJSON(e$name, auto_unbox = TRUE)
-        tags$tr(
+        ver <- identical(abierto(), e$name)
+        fila <- tags$tr(
           tags$td(class = "text-center",
             tags$input(type = "checkbox", class = "form-check-input", title = "Comparar",
                        checked = if (isTRUE(e$comparar)) NA,
@@ -66,9 +103,15 @@ mod_composer_server <- function(id, estado) {
           tags$td(e$name),
           tags$td(if (nzchar(normalizar_ref(e$sub))) e$sub else "Situación actual"),
           tags$td(if (nzchar(normalizar_ref(e$comp))) e$comp else "Sin compensación"),
-          tags$td(class = "text-end",
+          tags$td(class = "text-end text-nowrap",
+            tags$button(type = "button", class = paste("btn btn-sm me-1", if (ver) "btn-secondary" else "btn-outline-secondary"),
+                        title = if (ver) "Ocultar detalle" else "Ver en qué consiste el escenario",
+                        onclick = evento("detalle", nm_js), icon(if (ver) "eye-slash" else "eye")),
             tags$button(type = "button", class = "btn btn-sm btn-outline-danger", title = "Eliminar escenario",
                         onclick = evento("borrar", nm_js), icon("trash"))))
+        if (!ver) return(fila)
+        tagList(fila, tags$tr(tags$td(), tags$td(colspan = 4, class = "bg-body-tertiary",
+                                                 composer_detalle_ui(e, estado$libs, base_sub))))
       })
       tags$table(class = "table table-sm align-middle",
         tags$thead(tags$tr(tags$th(class = "text-center", style = "width:6rem;", "Comparar"),
@@ -107,6 +150,10 @@ mod_composer_server <- function(id, estado) {
         return()
       }
       estado$escenarios[[i]]$comparar <- valor
+    })
+
+    observeEvent(input$detalle, {
+      abierto(if (identical(abierto(), input$detalle)) NULL else input$detalle)
     })
 
     observeEvent(input$borrar, {

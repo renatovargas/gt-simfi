@@ -25,12 +25,14 @@ La app abre en la pestaña «Instructivo», con un resumen de las pantallas y de
 
 El aporte social por kWh de cada tramo es la tarifa plena (o la tarifa tope, si es menor) menos la tarifa objetivo. Si la tarifa objetivo queda vacía, o es igual o mayor que la tarifa plena, el tramo no recibe aporte social y paga la tarifa plena. Una tarifa objetivo de 0 no es lo mismo que vacía: da al tramo el aporte social máximo.
 
+El aporte social lo cubre el INDE, no el usuario. Lo que paga el usuario por kWh es la tarifa objetivo más, si la tarifa plena supera la tope, la diferencia entre la plena y la tope: **objetivo + (plena − tope)**. La tarifa tope no se paga; se resta de la plena porque el tramo entre la objetivo y la tope lo cubre el INDE.
+
 ### Cómo ajustar el subsidio
 
 - **Quién recibe el subsidio:** cambie los límites de consumo. Cada hogar queda en un solo tramo según su consumo mensual, y todos sus kWh se cobran con la tarifa de ese tramo. El límite indica dónde empieza el tramo; por ejemplo, para que el tramo 1 llegue hasta 120 kWh, escriba 120 en el límite del tramo 2.
 - **Cuánto recibe cada tramo:** baje la tarifa objetivo para dar más aporte social por kWh o súbala para dar menos.
 - **Quitar el subsidio a un tramo:** deje vacía la tarifa objetivo o iguálela a la tarifa plena.
-- **Limitar el aporte:** la tarifa tope fija el aporte máximo por kWh en todos los tramos de la distribuidora; si se baja, el aporte se reduce en los tramos donde la tarifa plena la supera.
+- **Papel de la tarifa tope:** es el límite hasta el que el INDE cubre el precio por encima de la tarifa objetivo. Cuando la tarifa plena supera la tope, el aporte social es tope − objetivo y el hogar paga la tarifa objetivo más la diferencia entre la plena y la tope. Si se baja la tope (con la objetivo igual), el aporte social cae y el hogar paga más; si se sube (como máximo hasta la plena), el aporte crece y el hogar paga menos. Si la tarifa plena es menor que la tope, la tope no cambia nada.
 - **Por distribuidora:** las tarifas se fijan por separado en cada pestaña (EEGSA, DEOCSA, DEORSA); los límites de consumo son comunes. El cargo fijo es solo de referencia y no cambia los resultados.
 - **Con qué se compara:** los resultados se comparan con la tarifa vigente, que incluye el subsidio actual. Si un esquema da menos aporte que el vigente, el cambio en el ingreso de los hogares sale negativo.
 
@@ -45,13 +47,20 @@ El aporte social por kWh de cada tramo es la tarifa plena (o la tarifa tope, si 
 1. Abra la pestaña «3 · Escenarios».
 2. Escriba el nombre del escenario y elija el esquema y la compensación guardados.
 3. Presione «Agregar escenario a la lista». Se marca para comparar automáticamente mientras haya menos de cuatro marcados.
-4. En «Escenarios guardados», la casilla «Comparar» de cada fila elige los escenarios que se simulan (hasta cuatro) y la papelera elimina el escenario.
+4. En «Escenarios guardados», la casilla «Comparar» de cada fila elige los escenarios que se simulan (hasta cuatro) y la papelera elimina el escenario. El botón del ojo muestra en qué consiste el escenario: los valores del esquema que difieren de la tarifa vigente (límites, tarifas y aporte social por tramo) y la compensación.
 
 ## 5. Simular y leer los resultados
 
 1. Abra la pestaña «4 · Simular» y presione «Simular».
 2. Consulte la «Leyenda de los escenarios» para ubicar cada «Escenario N».
 3. Revise «Resumen» y luego las vistas de pobreza, desigualdad, costo fiscal e incidencia. Compare «Base», «Cambio en subsidio» y «Con compensación». Esta última solo aparece si el escenario incluye una compensación.
+
+Algunas pautas para leer los resultados:
+
+- **Costo fiscal:** el gráfico «Cambio en el costo vs. base» muestra el ahorro (barras negativas, en verde) o el costo adicional frente a la situación vigente. El aporte a la tarifa social registrado por INDE es un dato administrativo fijo de la situación vigente y aparece como nota bajo el cuadro.
+- **Pobreza general y extrema:** una compensación que llega solo a los deciles más bajos puede reducir mucho la pobreza extrema y casi nada la pobreza general, porque esos hogares están muy por debajo de la línea de pobreza general y el monto no les alcanza para cruzarla.
+- **Incidencia por deciles:** cada decil agrupa el 10 % de las personas, no de los hogares. Con un monto fijo por hogar, el total en millones de Q crece de un decil al siguiente porque los deciles de mayor ingreso tienen hogares más pequeños y, por lo tanto, más hogares.
+- **Gini:** se muestra con cuatro decimales, porque los cambios del subsidio eléctrico en la desigualdad suelen ser pequeños.
 
 ## 6. Guardar el trabajo
 

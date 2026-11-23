@@ -31,7 +31,13 @@ mod_resultados_server <- function(id, res) {
           layout_columns(col_widths = c(6, 6),
             card(card_header("Tasa de pobreza (% de personas)"), plotly::plotlyOutput(ns("g_pob_tasa"), height = "340px")),
             card(card_header("Brecha de pobreza FGT1 (%)"), plotly::plotlyOutput(ns("g_pob_fgt1"), height = "340px"))),
-          card(card_header("Cuadro"), DT::DTOutput(ns("tbl_pob")))),
+          card(card_header("Cuadro"), DT::DTOutput(ns("tbl_pob"))),
+          p(class = "small text-muted",
+            "Una compensación que llega solo a los deciles más bajos puede reducir mucho la pobreza extrema y casi ",
+            "nada la pobreza general: esos hogares están muy por debajo de la línea de pobreza general (en el ",
+            "decil 4, el ingreso más alto es cerca del 80 % de la línea) y el monto no les alcanza para cruzarla. ",
+            "Para mover la pobreza general, la compensación tiene que llegar a hogares cercanos a esa línea ",
+            "(deciles 5 y 6).")),
         nav_panel("Desigualdad",
           layout_columns(col_widths = c(6, 6),
             card(card_header("Coeficiente de Gini"), plotly::plotlyOutput(ns("g_gini"), height = "320px")),
@@ -39,12 +45,16 @@ mod_resultados_server <- function(id, res) {
           card(card_header("Indicadores de desigualdad"), DT::DTOutput(ns("tbl_desig"))),
           card(card_header("Concentración y Kakwani por instrumento"), DT::DTOutput(ns("tbl_kak")))),
         nav_panel("Costo fiscal",
-          layout_columns(col_widths = c(6, 6),
+          layout_columns(col_widths = c(4, 4, 4),
             card(card_header("Costo anual (millones de Q)"), plotly::plotlyOutput(ns("g_fiscal"), height = "340px")),
+            card(card_header("Cambio en el costo vs. base (millones de Q)"),
+                 plotly::plotlyOutput(ns("g_cambio_costo"), height = "340px")),
             card(card_header("Costo total (% del PIB)"), plotly::plotlyOutput(ns("g_fiscal_pib"), height = "340px"))),
           card(card_header("Cuadro fiscal"), DT::DTOutput(ns("tbl_fiscal"))),
           p(class = "small text-muted",
-            "Montos en quetzales de 2023, con la población de la ENCOVI 2023.")),
+            "Montos en quetzales de 2023, con la población de la ENCOVI 2023. Un cambio negativo es un ahorro ",
+            "fiscal frente a la situación vigente."),
+          p(class = "small text-muted", nota_aporte_inde(res()))),
         nav_panel("Incidencia",
           layout_columns(col_widths = c(5, 7),
             radioButtons(ns("vista"), "Unidad", choices = setNames(names(VISTAS_ETIQ), unname(VISTAS_ETIQ))),
@@ -57,6 +67,10 @@ mod_resultados_server <- function(id, res) {
                           choices = res()$nombres, selected = res()$nombres[1]),
               plotly::plotlyOutput(ns("mapa_reg"), height = "460px")),
             plotly::plotlyOutput(ns(paste0("g_", g)), height = "380px"),
+            if (g == "dec") p(class = "small text-muted",
+              "Cada decil agrupa el 10 % de las personas, no de los hogares. Con un monto fijo por hogar, el total ",
+              "en millones de Q crece de un decil al siguiente porque los deciles de mayor ingreso tienen hogares ",
+              "más pequeños y, por lo tanto, más hogares."),
             DT::DTOutput(ns(paste0("t_", g))))))))),
         nav_panel("Tarifas",
           selectInput(ns("esc_tar"), "Escenario", choices = c(SERIE_BASE, res()$nombres), selected = res()$nombres[1]),
@@ -78,6 +92,7 @@ mod_resultados_server <- function(id, res) {
     output$g_gini  <- plotly::renderPlotly({ req(res()); grafico_desigualdad(res(), "gini") })
     output$g_palma <- plotly::renderPlotly({ req(res()); grafico_desigualdad(res(), "palma") })
     output$g_fiscal <- plotly::renderPlotly({ req(res()); grafico_fiscal(res()) })
+    output$g_cambio_costo <- plotly::renderPlotly({ req(res()); grafico_cambio_costo(res()) })
     output$g_fiscal_pib <- plotly::renderPlotly({ req(res()); grafico_costo_pib(res()) })
 
     # Incidencia: la medida disponible depende de la unidad elegida

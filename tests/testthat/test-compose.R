@@ -115,3 +115,21 @@ test_that("validar_esquema acepta la tarifa vigente y los ejemplos, y detecta fa
   l2 <- list(sub = list(malo = sin_tope), comp = list())
   expect_match(validar_escenarios(list(list(name = "E", sub = "malo", comp = "")), l2), "«malo» está incompleto")
 })
+
+test_that("cambios_esquema lista solo lo que difiere de la tarifa vigente", {
+  base <- payload_sub_desde_fila(plantilla$sim_sub[plantilla$sim_sub$sim_sub == 0, ])
+  expect_equal(nrow(cambios_esquema(base, base)), 0)
+  p <- base; p$toeeg1 <- 0
+  ch <- cambios_esquema(p, base)
+  expect_setequal(ch$Valor, c("Tarifa objetivo (Q/kWh)", "Aporte social (Q/kWh)"))
+  expect_true(all(ch$Distribuidora == "EEGSA" & ch$Tramo == "1"))
+  p <- base; p$tteeg <- base$tteeg - 0.1
+  expect_true("Tarifa tope (Q/kWh)" %in% cambios_esquema(p, base)$Valor)
+})
+
+test_that("describir_comp resume cada tipo de compensación", {
+  expect_match(describir_comp(list(grupo_com = 1, valor_com = 500, decil_com = 4)), "Q500.*deciles 1 a 4")
+  expect_match(describir_comp(list(grupo_com = 2, metodo_com = 2, pct_com = 150)), "150 %")
+  expect_match(describir_comp(list(grupo_com = 3, valor_com = 100, elect_com = 50)), "menos de 50 kWh")
+  expect_equal(describir_comp(NULL), "Sin compensación.")
+})

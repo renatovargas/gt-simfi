@@ -208,3 +208,68 @@ compose_scenario_inputs <- function(escenarios, libs, plantilla = tablas_escenar
 
   list(escenarios = escenarios_t, sim_sub = sim_sub, sim_extra = sim_extra)
 }
+
+# --- Descripción de componentes (pantalla de escenarios) ----------------------------
+
+#' Cambios de un esquema tarifario frente a la tarifa vigente: una fila por valor
+#' distinto (límites de consumo, tarifas plena/objetivo/tope y aporte social por
+#' tramo). Data frame vacío si el esquema es igual al vigente.
+cambios_esquema <- function(p, base) {
+  val <- \(x, c) suppressWarnings(as.numeric(x[[c]] %||% NA_real_))
+  distinto <- \(a, b) !(is.na(a) && is.na(b)) && (is.na(a) || is.na(b) || abs(a - b) > 1e-9)
+  fmt <- \(v, d = 4) if (is.na(v)) "vacío" else formatC(v, format = "f", digits = d, big.mark = ",")
+  # Aporte social por kWh (misma regla que el script 02 del pipeline: max(0, min(plena, tope) - objetivo))
+  aporte <- \(x, cam, k) {
+    pl <- val(x, cam$plena[k]); tp <- val(x, cam$tope); ob <- val(x, cam$objetivo[k])
+    lim <- suppressWarnings(min(c(pl, tp), na.rm = TRUE))
+    if (is.na(ob) || !is.finite(lim)) 0 else max(0, lim - ob)
+  }
+  filas <- list()
+  agregar <- \(param, dist, tramo, a, b, d = 4) {
+    filas[[length(filas) + 1L]] <<- data.frame(
+      `Distribuidora` = dist, `Tramo` = tramo, `Valor` = param,
+      `Vigente` = fmt(a, d), `Escenario` = fmt(b, d), check.names = FALSE, stringsAsFactors = FALSE)
+  }
+  for (k in seq_len(SUB_N_TRAMOS)) {
+    a <- val(base, SUB_CAMPOS_LIMITE[k]); b <- val(p, SUB_CAMPOS_LIMITE[k])
+    if (distinto(a, b)) agregar("Límite de consumo (desde, kWh)", "Todas", as.character(k), a, b, 0)
+  }
+  for (emp in names(SUB_DISTRIBUIDORAS)) {
+    cam <- sub_campos_dist(emp); nom <- SUB_DISTRIBUIDORAS[[emp]]
+    a <- val(base, cam$tope); b <- val(p, cam$tope)
+    if (distinto(a, b)) agregar("Tarifa tope (Q/kWh)", nom, "Todos", a, b)
+    for (k in seq_len(SUB_N_TRAMOS)) {
+      if (is.na(val(base, SUB_CAMPOS_LIMITE[k])) && is.na(val(p, SUB_CAMPOS_LIMITE[k]))) next
+      for (cc in list(c("Tarifa plena (Q/kWh)", cam$plena[k]), c("Tarifa objetivo (Q/kWh)", cam$objetivo[k]))) {
+        a <- val(base, cc[2]); b <- val(p, cc[2])
+        if (distinto(a, b)) agregar(cc[1], nom, as.character(k), a, b)
+      }
+      a <- aporte(base, cam, k); b <- aporte(p, cam, k)
+      if (distinto(a, b)) agregar("Aporte social (Q/kWh)", nom, as.character(k), a, b)
+    }
+  }
+  if (!length(filas)) {
+    return(data.frame(Distribuidora = character(), Tramo = character(), Valor = character(),
+                      Vigente = character(), Escenario = character(), stringsAsFactors = FALSE))
+  }
+  do.call(rbind, filas)
+}
+
+#' Descripción en una frase de una compensación guardada.
+describir_comp <- function(p) {
+  if (is.null(p)) return("Sin compensación.")
+  num <- \(x) suppressWarnings(as.numeric(x %||% NA_real_))
+  q <- \(x) paste0("Q", formatC(num(x), format = "f", digits = 0, big.mark = ","))
+  switch(as.character(num(p$grupo_com)),
+    "1" = sprintf("%s mensuales por hogar a los hogares de los deciles 1 a %d de ingreso.",
+                  q(p$valor_com), as.integer(num(p$decil_com))),
+    "2" = if (identical(num(p$metodo_com), 2)) {
+      sprintf("A los beneficiarios del bono social: %s %% de la mediana anual del bono.",
+              formatC(num(p$pct_com), format = "f", digits = 0))
+    } else {
+      sprintf("%s mensuales por hogar a los beneficiarios del bono social.", q(p$valor_com))
+    },
+    "3" = sprintf("%s mensuales por hogar a los hogares que consumen menos de %s kWh al mes.",
+                  q(p$valor_com), formatC(num(p$elect_com), format = "f", digits = 0)),
+    "Sin compensación.")
+}
