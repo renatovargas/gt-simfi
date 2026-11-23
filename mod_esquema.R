@@ -27,9 +27,12 @@ esq_ayuda_ajuste <- function() {
             "baje la tarifa objetivo para dar más aporte social por kWh o súbala para dar menos."),
     tags$li(tags$strong("Quitar el subsidio a un tramo: "),
             "deje vacía la tarifa objetivo o iguálela a la tarifa plena."),
-    tags$li(tags$strong("Limitar el aporte: "),
-            "la tarifa tope fija el aporte máximo por kWh en todos los tramos de la distribuidora; ",
-            "si se baja, el aporte se reduce en los tramos donde la tarifa plena la supera."),
+    tags$li(tags$strong("Papel de la tarifa tope: "),
+            "es el límite hasta el que el INDE cubre el precio por encima de la tarifa objetivo. Cuando la ",
+            "tarifa plena supera la tope, el aporte social es tope \u2212 objetivo y el hogar paga la tarifa objetivo ",
+            "más la diferencia entre la plena y la tope. Si se baja la tope (con la objetivo igual), el aporte social ",
+            "cae y el hogar paga más; si se sube (como máximo hasta la plena), el aporte crece y el hogar paga menos. ",
+            "Si la tarifa plena es menor que la tope, la tope no cambia nada."),
     tags$li(tags$strong("Por distribuidora: "),
             "las tarifas se fijan por separado en cada pestaña (EEGSA, DEOCSA, DEORSA); los límites de ",
             "consumo son comunes. El cargo fijo es solo de referencia y no cambia los resultados."),
@@ -50,8 +53,9 @@ esq_panel_dist <- function(ns, emp, nombre) {
   nav_panel(
     nombre,
     p(class = "text-muted small mt-2 mb-1",
-      "Aporte social por kWh de cada tramo = tarifa plena (o la tarifa tope, si es menor) \u2212 tarifa objetivo. ",
-      "El hogar paga por kWh la tarifa plena menos ese aporte social."),
+      "Aporte social por kWh de cada tramo (lo cubre el INDE) = tarifa plena (o la tarifa tope, si es menor) \u2212 tarifa objetivo. ",
+      "El hogar paga por kWh la tarifa plena menos ese aporte social: la tarifa objetivo más, si la plena supera ",
+      "la tope, la diferencia entre la plena y la tope."),
     tags$ul(class = "text-muted small mb-2",
       tags$li("Si la tarifa objetivo queda vacía, o es igual o mayor que la tarifa plena, el tramo no ",
               "recibe aporte social y paga la tarifa plena."),
@@ -74,7 +78,8 @@ esq_panel_dist <- function(ns, emp, nombre) {
       col_widths = c(3, 9),
       numericInput(ns(cam$tope), "Tarifa tope (Q/kWh)", NA, min = 0, step = 0.0001),
       p(class = "text-muted small pt-4 mb-0",
-        "Límite máximo del aporte social por kWh en todos los tramos de esta distribuidora."))
+        "Límite hasta el que el INDE cubre el precio en todos los tramos de esta distribuidora. ",
+        "Si la baja, el aporte social cae y el hogar paga más."))
   )
 }
 

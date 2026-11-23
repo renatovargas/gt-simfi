@@ -133,3 +133,17 @@ test_that("«Actualizar» guarda los cambios en la compensación cargada", {
     expect_equal(estado$libs$comp[[nm]]$valor_com, 250)
   })
 })
+
+test_that("la lista de escenarios muestra el detalle de la reforma con el ojo", {
+  source(file.path(raiz, "mod_composer.R"), encoding = "UTF-8")
+  esc <- list(list(name = "R1", sub = names(libs$sub)[1], comp = names(libs$comp)[1], comparar = TRUE))
+  estado <- reactiveValues(libs = libs, escenarios = esc)
+  testServer(mod_composer_server, args = list(estado = estado, plantilla = plantilla), {
+    expect_false(grepl("distinto", output$lista$html))
+    session$setInputs(detalle = "R1")
+    expect_true(grepl("distinto", output$lista$html))
+    expect_true(grepl("Compensación", output$lista$html))
+    session$setInputs(detalle = "R1")
+    expect_null(abierto())
+  })
+})

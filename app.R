@@ -50,7 +50,7 @@ server <- function(input, output, session) {
 
   mod_esquema_server("esq", estado, PLANTILLA)
   mod_compensacion_server("comp", estado, PLANTILLA)
-  mod_composer_server("composer", estado)
+  mod_composer_server("composer", estado, PLANTILLA)
   mod_sesion_server("sesion", estado, raiz)
   mod_simulacion_server("sim", estado, PLANTILLA)
 

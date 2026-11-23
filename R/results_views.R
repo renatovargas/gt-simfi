@@ -34,9 +34,9 @@ GRUPOS_ETIQ <- c(dec = "Deciles", estr = "Estrato", urb = "Área", sex = "Sexo d
 # --- Tablas ---------------------------------------------------------------------
 
 #' Formatea una fila de la matriz de indicadores según su unidad.
-formato_fila <- function(nombre, x) {
+formato_fila <- function(nombre, x, digitos = 2) {
   dig <- ifelse(grepl("Nuevos pobres|Hogares", nombre), 0,
-                ifelse(grepl("Gini|Palma|Theil", nombre), 3, 2))
+                ifelse(grepl("Gini", nombre), 4, ifelse(grepl("Palma|Theil", nombre), 3, digitos)))
   mapply(\(v, d) if (is.na(v)) "" else format(round(v, d), big.mark = ",", nsmall = d, trim = TRUE),
          x, dig, USE.NAMES = FALSE)
 }
@@ -63,7 +63,13 @@ ancho <- function(d, fila, columna, valor = "valor", nombre_fila = "Indicador") 
 tabla_pobreza <- function(res, tipo, claves = CLAVES_POB) {
   d <- res$pobreza[res$pobreza$tipo == tipo & res$pobreza$clave %in% claves, ]
   d <- d[order(match(d$clave, claves)), ]
-  ancho(d, "indicador", "serie")
+  formatear_ancho(ancho(d, "indicador", "serie"), 3)
+}
+
+#' Aplica formato_fila() a las columnas numéricas de una tabla ancha (enteros sin decimales).
+formatear_ancho <- function(out, digitos = 2) {
+  for (j in names(out)[-1]) out[[j]] <- formato_fila(out[[1]], out[[j]], digitos)
+  out
 }
 
 tabla_desigualdad <- function(res) {
@@ -78,11 +84,28 @@ tabla_kakwani <- function(res) {
   ancho(d, "instrumento", "col_nombre", nombre_fila = "Instrumento")
 }
 
+# El aporte registrado por INDE es un dato fijo de la situación vigente (no cambia con
+# el escenario): se muestra como nota (nota_aporte_inde()), no como fila del cuadro.
+CLAVES_FIS_REFERENCIA <- c("aporte_inde", "ratio_inde")
+
 tabla_fiscal <- function(res) {
-  d <- res$fiscal
+  d <- res$fiscal[!res$fiscal$clave %in% CLAVES_FIS_REFERENCIA, ]
   d <- d[order(match(d$clave, CLAVES_FIS)), ]
   d$escenario <- etiqueta_corta(res, d$escenario)
-  ancho(d, "indicador", "escenario")
+  formatear_ancho(ancho(d, "indicador", "escenario"))
+}
+
+#' Nota con el aporte a la tarifa social registrado por INDE (dato de la situación vigente).
+nota_aporte_inde <- function(res) {
+  f <- res$fiscal[res$fiscal$escenario == res$nombres[1], ]
+  v <- \(k) f$valor[f$clave == k][1]
+  inde <- v("aporte_inde"); sim <- v("costo_base"); ratio <- v("ratio_inde")
+  if (is.null(inde) || is.na(inde)) return(NULL)
+  n <- \(x, d = 1) format(round(x, d), big.mark = ",", nsmall = d, trim = TRUE)
+  sprintf(paste0("Referencia: el aporte a la tarifa social registrado por INDE para la situación vigente es de ",
+                 "%s millones de Q; el subsidio vigente simulado (%s millones de Q) equivale al %s %% de ese ",
+                 "monto. Es un dato administrativo fijo: no cambia con los escenarios."),
+          n(inde, 2), n(sim), n(ratio))
 }
 
 tabla_grupo <- function(res, grupo, vista) {
@@ -148,18 +171,30 @@ tabla_equivalencias <- function(res) {
 }
 
 #' Barras con plotly a partir de un data frame con `x`, `color`, `valor` y `texto`.
+#' Si `digitos` no es NULL, cada barra lleva su valor encima (redondeado a esos decimales).
 barras_plotly <- function(d, ylab, barmode = "group", horizontal = FALSE, archivo = "grafico",
-                          leyenda = TRUE, leyenda_siempre = FALSE) {
+                          leyenda = TRUE, leyenda_siempre = FALSE, digitos = NULL, colores = NULL) {
   d$x <- factor(d$x, levels = unique(d$x))
   d$color <- factor(d$color, levels = unique(d$color))
+  d$etiqueta <- if (is.null(digitos)) "" else
+    formatC(d$valor, format = "f", digits = digitos, big.mark = ",")
+  pos <- if (is.null(digitos)) "none" else "outside"
   p <- if (horizontal) {
-    plotly::plot_ly(d, x = ~valor, y = ~x, color = ~color, hovertext = ~texto, type = "bar",
-                    orientation = "h", textposition = "none", hoverinfo = "text")
+    plotly::plot_ly(d, x = ~valor, y = ~x, color = ~color, colors = colores, hovertext = ~texto, type = "bar",
+                    orientation = "h", text = ~etiqueta, textposition = pos, hoverinfo = "text",
+                    cliponaxis = FALSE)
   } else {
-    plotly::plot_ly(d, x = ~x, y = ~valor, color = ~color, hovertext = ~texto, type = "bar",
-                    textposition = "none", hoverinfo = "text")
+    plotly::plot_ly(d, x = ~x, y = ~valor, color = ~color, colors = colores, hovertext = ~texto, type = "bar",
+                    text = ~etiqueta, textposition = pos, hoverinfo = "text", cliponaxis = FALSE)
   }
   eje_valor <- list(title = ylab, zeroline = TRUE)
+  if (!is.null(digitos)) {
+    # Margen para que la etiqueta quepa sobre (o bajo) la barra sin tapar los ejes
+    tot <- if (barmode == "stack") tapply(d$valor, d$x, sum) else d$valor
+    lo <- min(0, tot, na.rm = TRUE); hi <- max(0, tot, na.rm = TRUE)
+    pad <- 0.15 * max(hi - lo, 1e-9)
+    eje_valor$range <- c(lo - if (lo < 0) pad else 0, hi + if (hi > 0) pad else 0)
+  }
   eje_cat <- list(title = "", automargin = TRUE)
   if (horizontal) eje_cat$autorange <- "reversed"
   p |>
@@ -175,12 +210,12 @@ barras_plotly <- function(d, ylab, barmode = "group", horizontal = FALSE, archiv
 }
 
 #' Barras por escenario (Base, cambio en subsidio, con compensación).
-grafico_series <- function(res, d, ylab, archivo = "grafico") {
+grafico_series <- function(res, d, ylab, archivo = "grafico", digitos = 2) {
   d$x <- etiqueta_corta(res, d$escenario)
   d$texto <- paste0(detalle_esc(res, d$escenario), "<br><b>", d$ingreso, "</b><br>",
                     ylab, ": ", fmt_valor(d$valor))
   d$color <- as.character(d$ingreso)
-  barras_plotly(d, ylab, archivo = archivo)
+  barras_plotly(d, ylab, archivo = archivo, digitos = digitos)
 }
 
 grafico_pobreza <- function(res, tipo, clave = "tasa") {
@@ -190,7 +225,8 @@ grafico_pobreza <- function(res, tipo, clave = "tasa") {
 
 grafico_desigualdad <- function(res, clave) {
   d <- res$desigualdad[res$desigualdad$clave == clave, ]
-  grafico_series(res, d, d$indicador[1], paste0("desigualdad_", clave))
+  grafico_series(res, d, d$indicador[1], paste0("desigualdad_", clave),
+                 digitos = if (clave %in% c("gini", "d_gini")) 4 else 2)
 }
 
 #' Costo fiscal por escenario: subsidio + compensación (millones de Q por año).
@@ -212,6 +248,20 @@ grafico_fiscal <- function(res) {
   barras_plotly(d, "Millones de Q por año", barmode = "stack", archivo = "costo_fiscal")
 }
 
+#' Cambio en el costo total (subsidio + compensación) frente a la base, por escenario.
+#' Negativo = ahorro fiscal.
+grafico_cambio_costo <- function(res) {
+  f <- res$fiscal[res$fiscal$clave == "d_costo_total", ]
+  d <- data.frame(escenario = res$nombres, valor = f$valor[match(res$nombres, f$escenario)])
+  d$x <- etiqueta_corta(res, d$escenario)
+  d$color <- ifelse(d$valor < 0, "Ahorro fiscal", "Costo adicional")
+  d$texto <- paste0(detalle_esc(res, d$escenario), "<br><b>", d$color, "</b><br>",
+                    "Cambio en millones de Q por año: ", fmt_valor(d$valor))
+  barras_plotly(d, "Cambio vs. base (millones de Q por año)", archivo = "cambio_costo", digitos = 1,
+                leyenda_siempre = TRUE,
+                colores = c("Ahorro fiscal" = "#2E8B57", "Costo adicional" = "#C0392B"))
+}
+
 grafico_costo_pib <- function(res) {
   f <- res$fiscal
   d <- rbind(
@@ -221,7 +271,7 @@ grafico_costo_pib <- function(res) {
   d$x <- etiqueta_corta(res, d$escenario)
   d$color <- "Costo"
   d$texto <- paste0(detalle_esc(res, d$escenario), "<br>% del PIB: ", fmt_valor(d$valor))
-  barras_plotly(d, "% del PIB", archivo = "costo_pib")
+  barras_plotly(d, "% del PIB", archivo = "costo_pib", digitos = 3)
 }
 
 #' Incidencia por grupo (deciles, estrato, área, ...) para una vista y una medida.

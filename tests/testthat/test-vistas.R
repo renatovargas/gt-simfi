@@ -35,7 +35,7 @@ test_that("los gráficos usan etiquetas cortas y el hover lleva el detalle compl
     expect_false(any(grepl(e[[1]]$name, unlist(lapply(datos_trazas(g), \(t) c(t$x, t$y, t$name))),
                            fixed = TRUE)))
     expect_true(all(unir(g, "hoverinfo") == "text"))
-    expect_true(all(unir(g, "textposition") == "none"))
+    expect_true(all(unir(g, "textposition") %in% c("none", "outside")))
   }
   # El nombre del escenario se escapa en el hover (HTML)
   expect_true(any(grepl("&lt;b&gt;", unir(graficos[[1]], "hovertext"), fixed = TRUE)))
@@ -127,4 +127,29 @@ test_that("un escenario sin compensación no muestra la serie «Con compensació
   fis <- datos_trazas(grafico_fiscal(res))
   comp <- Filter(\(t) identical(t$name, "Compensación"), fis)[[1]]
   expect_false("Escenario 2" %in% comp$x)
+})
+
+test_that("las barras de pobreza, desigualdad y costo llevan el valor encima", {
+  for (g in list(grafico_pobreza(res, "general"), grafico_desigualdad(res, "gini"), grafico_costo_pib(res),
+                 grafico_cambio_costo(res))) {
+    expect_true(all(unir(g, "textposition") == "outside"))
+    expect_true(all(nzchar(unir(g, "text"))))
+  }
+  # Gini con 4 decimales para que se vean cambios pequeños
+  expect_true(all(grepl("^0\\.[0-9]{4}$", unir(grafico_desigualdad(res, "gini"), "text"))))
+})
+
+test_that("el cambio en el costo distingue ahorro de costo adicional", {
+  d <- res$fiscal[res$fiscal$clave == "d_costo_total", ]
+  nombres_traza <- unique(unlist(lapply(datos_trazas(grafico_cambio_costo(res)), `[[`, "name")))
+  esperado <- unique(ifelse(d$valor < 0, "Ahorro fiscal", "Costo adicional"))
+  expect_setequal(nombres_traza, esperado)
+})
+
+test_that("el cuadro fiscal da hogares enteros y deja el aporte INDE como nota", {
+  t <- tabla_fiscal(res)
+  expect_false(any(grepl("INDE", t$Indicador)))
+  hog <- t[grepl("^Hogares", t$Indicador), -1]
+  expect_false(any(grepl("\\.", unlist(hog))))
+  expect_match(nota_aporte_inde(res), "INDE")
 })
